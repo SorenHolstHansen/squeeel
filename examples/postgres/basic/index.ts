@@ -1,3 +1,5 @@
-import { add } from '@squeal/postgres';
+import { q } from '@squeal/postgres' with { type: 'macro' };
+import { perform } from '@squeal/postgres';
 
-console.log("Hello via Bun!", add(1, 2));
+const res = await perform(q("SELECT * FROM post"));
+const res2 = await perform(q("SELECT id FROM post"));
