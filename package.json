@@ -1,0 +1,5 @@
+{
+  "name": "squeal",
+  "module": "index.ts",
+  "workspaces": ["packages/*", "examples/postgres/*"]
+}

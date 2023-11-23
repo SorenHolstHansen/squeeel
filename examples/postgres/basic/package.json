@@ -1,0 +1,14 @@
+{
+  "name": "squeal-example-postgres-basic",
+  "module": "index.ts",
+  "type": "module",
+  "dependencies": {
+    "@squeal/postgres": "workspace:*"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
