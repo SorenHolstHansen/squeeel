@@ -1,8 +1,5 @@
 {
   "name": "squeal",
   "module": "index.ts",
-  "workspaces": ["packages/*", "examples/postgres/*"],
-  "dependencies": {
-    "pg": "^8.11.3"
-  }
+  "workspaces": ["packages/*", "examples/postgres/*"]
 }
