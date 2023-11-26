@@ -3,9 +3,11 @@
   "module": "index.ts",
   "type": "module",
   "dependencies": {
-    "@squeal/core": "workspace:*"
+    "@squeal/core": "workspace:*",
+    "pg": "^8.11.3"
   },
   "devDependencies": {
+    "@types/pg": "^8.10.9",
     "bun-types": "latest"
   },
   "peerDependencies": {
