@@ -1,16 +1,18 @@
-import { Loader } from '@squeal/core'
-import path from 'path';
-export * from './query';
-import { Client } from 'pg';
+import { Loader } from "@squeal/core";
+import path from "path";
+export * from "./query";
+import { Client } from "pg";
 
 async function generateTypesForQueries(queries: string[]): Promise<void> {
   console.log(`Generating types for ${queries.length} queries!`);
   const database_url = "postgres://postgres:postgres@localhost:5432/postgres";
   const client = new Client({ connectionString: database_url });
   await client.connect();
-  const types = await Promise.all(queries.map(async (query) => {
-    return [query, await generateTypeForQuery(query, client)]
-  }));
+  const types = await Promise.all(
+    queries.map(async (query) => {
+      return [query, await generateTypeForQuery(query, client)];
+    }),
+  );
   await client.end();
 
   let a = "{\n";
@@ -19,7 +21,10 @@ async function generateTypesForQueries(queries: string[]): Promise<void> {
   }
   a += "}";
 
-  Bun.write(path.join(__dirname, "_squeal_generated_types.ts"), `export type GeneratedQueryTypes = ${a};`);
+  Bun.write(
+    path.join(__dirname, "_squeal_generated_types.ts"),
+    `export type GeneratedQueryTypes = ${a};`,
+  );
 }
 
 const loader = new Loader(generateTypesForQueries);
@@ -32,11 +37,16 @@ export function q<T extends string>(query: T): T {
 
 function postgresTypeToTsType(type: string): string {
   switch (type) {
-    case "integer": return "number";
-    case "text": return "string";
-    case "boolean": return "boolean";
-    case "timestamp with time zone": return "Date";
-    default: return type
+    case "integer":
+      return "number";
+    case "text":
+      return "string";
+    case "boolean":
+      return "boolean";
+    case "timestamp with time zone":
+      return "Date";
+    default:
+      return type;
   }
 }
 
@@ -45,7 +55,10 @@ function generateId(): number {
   return id++;
 }
 
-async function generateTypeForQuery(query: string, client: Client): Promise<string> {
+async function generateTypeForQuery(
+  query: string,
+  client: Client,
+): Promise<string> {
   const id = generateId();
   const result = await client.query(`
     PREPARE sample_query_${id} AS ${query} LIMIT 0;
@@ -67,4 +80,3 @@ async function generateTypeForQuery(query: string, client: Client): Promise<stri
 
   return _type;
 }
-
