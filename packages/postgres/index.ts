@@ -1,37 +1,6 @@
+import { Loader } from '@squeal/core'
 import path from 'path';
 export * from './query';
-import { Client } from 'pg';
-
-
-class Loader {
-  queries: string[] = [];
-  batchLoaderHasBeenCalled = false;
-
-  async generateTypes(queries: string[]) {
-    console.log(`Generating types for ${queries.length} queries`);
-  }
-
-  async load(query: string) {
-    return new Promise(async (resolve, reject) => {
-      this.queries.push(query);
-      process.nextTick(async () => {
-        if (!this.batchLoaderHasBeenCalled) {
-          this.generateTypes(this.queries);
-          this.batchLoaderHasBeenCalled = true;
-        }
-        resolve(undefined)
-      });
-    });
-  }
-}
-
-const loader = new Loader();
-
-export function q<T extends string>(query: T): T {
-  loader.load(query);
-
-  return query;
-}
 
 async function generateTypeForQuery(query: string): Promise<void> {
   // const database_url = "postgres://postgres:postgres@localhost:5432/postgres";
@@ -58,6 +27,18 @@ async function generateTypeForQuery(query: string): Promise<void> {
   // Bun.write(path.join(__dirname, "_squeal_generated_types.ts"), `export type MyType = {"${query}": ${_type}};`);
 
   // await client.end();
+}
+
+async function generateTypesForQueries(queries: string[]): Promise<void> {
+  console.log({queries})
+}
+
+const loader = new Loader(generateTypesForQueries);
+
+export function q<T extends string>(query: T): T {
+  loader.load(query);
+
+  return query;
 }
 
 function postgresTypeToTsType(type: string): string {

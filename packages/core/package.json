@@ -1,10 +1,7 @@
 {
-  "name": "@squeal/postgres",
+  "name": "@squeal/core",
   "module": "index.ts",
   "type": "module",
-  "dependencies": {
-    "@squeal/core": "workspace:*"
-  },
   "devDependencies": {
     "bun-types": "latest"
   },
