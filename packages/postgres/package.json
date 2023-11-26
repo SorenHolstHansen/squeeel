@@ -2,6 +2,9 @@
   "name": "@squeal/postgres",
   "module": "index.ts",
   "type": "module",
+  "dependencies": {
+    "pg": "^8.11.3"
+  },
   "devDependencies": {
     "bun-types": "latest"
   },

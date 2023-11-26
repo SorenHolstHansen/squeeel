@@ -33,7 +33,7 @@ export function q<T extends string>(query: T): T {
   return query;
 }
 
-async function _q(query: string): Promise<void> {
+async function generateTypeForQuery(query: string): Promise<void> {
   // const database_url = "postgres://postgres:postgres@localhost:5432/postgres";
   // const client = new Client({ connectionString: database_url });
   // await client.connect();
