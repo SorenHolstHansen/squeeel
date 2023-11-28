@@ -8,7 +8,8 @@
   },
   "devDependencies": {
     "@types/pg": "^8.10.9",
-    "bun-types": "latest"
+    "bun-types": "latest",
+    "ts-morph": "^20.0.0"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"

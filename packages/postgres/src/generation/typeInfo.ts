@@ -1,4 +1,13 @@
+import {
+	ArrayType,
+	BooleanType,
+	DateType,
+	NumberType,
+	StringType,
+} from '@squeal/core';
 import { Oid } from './types';
+import { ts } from 'ts-morph';
+const { factory } = ts;
 
 enum PgType {
 	Bool,
@@ -74,7 +83,7 @@ enum PgType {
 	// RecordArray,
 	// Uuid,
 	// UuidArray,
-	// Jsonb,
+	Jsonb,
 	// JsonbArray,
 	// Int4Range,
 	// Int4RangeArray,
@@ -251,8 +260,8 @@ export function tryGetPgTypeFromOid(oid: Oid): PgType | null {
 		// 	return PgType.Uuid;
 		// case 2951:
 		// 	return PgType.UuidArray;
-		// case 3802:
-		// 	return PgType.Jsonb;
+		case 3802:
+			return PgType.Jsonb;
 		// case 3807:
 		// 	return PgType.JsonbArray;
 		// case 3904:
@@ -285,31 +294,35 @@ export function tryGetPgTypeFromOid(oid: Oid): PgType | null {
 		// 	return PgType.JsonpathArray;
 
 		default:
+			console.log({ oid });
 			return null;
 	}
 }
 
-export function pgTypeToTsType(pgType: PgType): string {
+export function pgTypeToTsType(pgType: PgType): ts.TypeNode {
 	switch (pgType) {
 		case PgType.Bool:
-			return 'boolean';
+			return BooleanType;
 		// PgType.case Bytea: return "";
 		case PgType.Char:
-			return 'string';
+		case PgType.Text:
+		case PgType.Varchar:
+			return StringType;
 		// PgType.case Name: return "";
 		case PgType.Int8:
-			return 'number';
 		case PgType.Int2:
-			return 'number';
 		case PgType.Int4:
-			return 'number';
-		case PgType.Text:
-			return 'string';
+			return NumberType;
 		// PgType.case Oid: return "";
 		case PgType.Json:
-			return '';
+		case PgType.Jsonb:
+			return factory.createTypeReferenceNode(
+				factory.createIdentifier('JsonValue')
+			);
 		case PgType.JsonArray:
-			return '';
+			return ArrayType(
+				factory.createTypeReferenceNode(factory.createIdentifier('JsonValue'))
+			);
 		// PgType.case Point: return "";
 		// PgType.case Lseg: return "";
 		// PgType.case Path: return "";
@@ -349,19 +362,14 @@ export function pgTypeToTsType(pgType: PgType): string {
 		// PgType.case MacaddrArray: return "";
 		// PgType.case InetArray: return "";
 		// PgType.case Bpchar: return "";
-		case PgType.Varchar:
-			return 'string';
 		case PgType.Date:
-			return 'Date';
 		case PgType.Time:
-			return 'Date';
 		case PgType.Timestamp:
-			return 'Date';
+		case PgType.Timestamptz:
+			return DateType;
 		// PgType.case TimestampArray: return "";
 		// PgType.case DateArray: return "";
 		// PgType.case TimeArray: return "";
-		case PgType.Timestamptz:
-			return 'Date';
 		// PgType.case TimestamptzArray: return "";
 		// PgType.case Interval: return "";
 		// PgType.case IntervalArray: return "";

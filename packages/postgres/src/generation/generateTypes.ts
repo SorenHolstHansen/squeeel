@@ -1,8 +1,10 @@
-import { generateId } from '@squeal/core';
+import { ExportKeyword, JsonValueType } from '@squeal/core';
 import path from 'path';
 import { Client } from 'pg';
-import { pgTypeToTsType, tryGetPgTypeFromOid } from './type_info';
-import { Oid } from './types';
+import { Project, printNode } from 'ts-morph';
+import { ts } from 'ts-morph';
+import { GeneratedTypes, newGenerateTypeForQuery } from './newGenerateTypes';
+const { factory } = ts;
 
 export async function generateTypesForQueries(
 	queries: string[]
@@ -12,55 +14,49 @@ export async function generateTypesForQueries(
 	await client.connect();
 	const types = await Promise.all(
 		queries.map(async (query) => {
-			return [query, await generateTypeForQuery(query, client)];
+			return [query, await newGenerateTypeForQuery(query, client)] as [
+				string,
+				GeneratedTypes,
+			];
 		})
 	);
 	await client.end();
 
-	let a = '{\n';
-	for (const [query, _type] of types) {
-		a += `\t"${query}": ${_type},\n`;
-	}
-	a += '}';
+	const project = new Project();
+	const sourceFile = project.createSourceFile('_.ts');
+	const GeneratedTypes = factory.createTypeAliasDeclaration(
+		[ExportKeyword],
+		factory.createIdentifier('GeneratedTypes'),
+		undefined,
+		factory.createTypeLiteralNode(
+			types.map(([query, { outputType, inputParameterType }]) =>
+				factory.createPropertySignature(
+					undefined,
+					factory.createStringLiteral(query),
+					undefined,
+					factory.createTypeLiteralNode([
+						factory.createPropertySignature(
+							undefined,
+							factory.createIdentifier('inputType'),
+							undefined,
+							inputParameterType
+						),
+						factory.createPropertySignature(
+							undefined,
+							factory.createIdentifier('outputType'),
+							undefined,
+							outputType
+						),
+					])
+				)
+			)
+		)
+	);
+	sourceFile.addStatements(printNode(JsonValueType));
+	sourceFile.addStatements(printNode(GeneratedTypes));
 
 	Bun.write(
-		path.join(__dirname, '_squeal_generated_types.ts'),
-		`export type GeneratedQueryTypes = ${a};`
+		path.join(__dirname, '../../_squeal_generated_types.ts'),
+		sourceFile.getFullText()
 	);
-}
-
-function postgresTypeToTsType(oid: Oid): string {
-	const pgType = tryGetPgTypeFromOid(oid);
-	if (pgType != null) {
-		return pgTypeToTsType(pgType);
-	}
-	return 'unknown';
-}
-
-async function generateTypeForQuery(
-	query: string,
-	client: Client
-): Promise<string> {
-	const id = generateId();
-	const result = await client.query(`
-    PREPARE sample_query_${id} AS ${query} LIMIT 0;
-
-    CREATE TEMP TABLE tmp_sample_${id} AS EXECUTE sample_query_${id} ( NULL );
-
-    SELECT 
-      attname, 
-      atttypid
-    FROM pg_attribute
-    WHERE attrelid = 'tmp_sample_${id}'::regclass
-      AND attnum > 0
-      AND NOT attisdropped
-    ORDER BY attnum;
-  `);
-	let _type = '{\n';
-	for (const row of result[2].rows) {
-		_type += `\t\t${row.attname}: ${postgresTypeToTsType(row.atttypid)},\n`;
-	}
-	_type += '\t}';
-
-	return _type;
 }
