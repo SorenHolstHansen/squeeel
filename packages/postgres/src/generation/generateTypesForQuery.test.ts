@@ -1,7 +1,7 @@
 import { Client } from 'pg';
 import { generateTypesForQuery } from './generateTypesForQuery';
 
-import { expect, test } from 'bun:test';
+import { beforeEach, expect, test } from 'bun:test';
 import { printNode } from 'ts-morph';
 
 const client = new Client(
@@ -9,20 +9,68 @@ const client = new Client(
 );
 await client.connect();
 
-test('simple output type', async () => {
-	const a = await generateTypesForQuery('SELECT id FROM post', client);
-	expect(printNode(a.outputType)).toBe(`{
-    id: number;
+beforeEach(async () => {
+	await client.query(`
+		DROP SCHEMA public CASCADE;
+		CREATE SCHEMA public;
+		GRANT ALL ON SCHEMA public TO postgres;
+		GRANT ALL ON SCHEMA public TO public;
+`);
+})
+
+test('can generate simple integer type', async () => {
+	const res = await generateTypesForQuery("SELECT 1", client);
+	expect(printNode(res.outputType)).toBe(`{
+    "?column?": 1;
 }`);
-	expect(printNode(a.argType)).toBe('[\n]');
+	expect(printNode(res.argType)).toBe('[\n]');
 });
 
-test('simple output type2', async () => {
-	const a = await generateTypesForQuery(
+test('can generate simple boolean type', async () => {
+	const res = await generateTypesForQuery("SELECT true", client);
+	expect(printNode(res.outputType)).toBe(`{
+    "?column?": true;
+}`);
+	expect(printNode(res.argType)).toBe('[\n]');
+});
+
+test('can generate simple text type', async () => {
+	const res = await generateTypesForQuery("SELECT 'a'", client);
+	expect(printNode(res.outputType)).toBe(`{
+    "?column?": "a";
+}`);
+	expect(printNode(res.argType)).toBe('[\n]');
+});
+
+test('can generate types for simple table query, and join', async () => {
+	await client.query(`
+CREATE TABLE account (
+    id             SERIAL PRIMARY KEY,
+    username       TEXT UNIQUE NOT NULL
+);
+
+CREATE TABLE post (
+    id             SERIAL PRIMARY KEY,
+    account_id     INT NOT NULL REFERENCES account(id),
+    title          TEXT NOT NULL UNIQUE,
+    body           TEXT,
+    published      BOOLEAN,
+    details        JSONB,
+    likes          INT,
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+		`);
+	const res1 = await generateTypesForQuery('SELECT id FROM post', client);
+	expect(printNode(res1.outputType)).toBe(`{
+    id: number;
+}`);
+	expect(printNode(res1.argType)).toBe('[\n]');
+
+	const res2 = await generateTypesForQuery(
 		'SELECT p.id, title, published, likes, created_at, details, u.username FROM post p LEFT JOIN account u ON u.id = p.account_id WHERE p.id = $1',
 		client
 	);
-	expect(printNode(a.outputType)).toBe(`{
+	expect(printNode(res2.outputType)).toBe(`{
     id: number;
     title: string;
     published?: boolean;
@@ -31,17 +79,8 @@ test('simple output type2', async () => {
     details?: JsonValue;
     username: string;
 }`);
-	expect(printNode(a.argType)).toBe(`[
+	expect(printNode(res2.argType)).toBe(`[
     number
 ]`);
-});
-
-test('simple output type 3', async () => {
-	console.log((await client.query("SELECT 1, 'a'")).rows);
-	const res = await generateTypesForQuery("SELECT 1, 'a'", client);
-	expect(printNode(res.outputType)).toBe(`{
-    "?column?": "a";
-}`);
-	expect(printNode(res.argType)).toBe('[\n]');
 });
 

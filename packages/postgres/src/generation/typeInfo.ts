@@ -294,7 +294,6 @@ export function tryGetPgTypeFromOid(oid: Oid): PgType | null {
 		// 	return PgType.JsonpathArray;
 
 		default:
-			console.log({ oid });
 			return null;
 	}
 }
