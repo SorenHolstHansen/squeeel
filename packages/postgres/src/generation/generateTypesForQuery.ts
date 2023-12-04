@@ -89,6 +89,7 @@ export async function generateTypesForQuery(
 		`EXPLAIN (VERBOSE, FORMAT JSON) EXECUTE sample_query_${id}(NULL);`
 	);
 	const queryPlan: QueryPlan = result2.rows[0]['QUERY PLAN'][0]['Plan'];
+	console.log(queryPlan)
 	if (queryPlan['Node Type'] === "Result") {
 		// Really simple case, just something like select 1, 'a'
 		// Since objects can't have duplicate field names, this will result in the last output only

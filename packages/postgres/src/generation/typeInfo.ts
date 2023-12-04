@@ -39,16 +39,16 @@ enum PgType {
 	// Macaddr8Array,
 	// Macaddr,
 	// Inet,
-	// BoolArray,
+	BoolArray,
 	// ByteaArray,
-	// CharArray,
+	CharArray,
 	// NameArray,
-	// Int2Array,
-	// Int4Array,
-	// TextArray,
+	Int2Array,
+	Int4Array,
+	TextArray,
 	// BpcharArray,
-	// VarcharArray,
-	// Int8Array,
+	VarcharArray,
+	Int8Array,
 	// PointArray,
 	// LsegArray,
 	// PathArray,
@@ -182,8 +182,8 @@ export function tryGetPgTypeFromOid(oid: Oid): PgType | null {
 		// 	return PgType.Int2Array;
 		// case 1007:
 		// 	return PgType.Int4Array;
-		// case 1009:
-		// 	return PgType.TextArray;
+		case 1009:
+			return PgType.TextArray;
 		// case 1014:
 		// 	return PgType.BpcharArray;
 		// case 1015:
@@ -294,6 +294,7 @@ export function tryGetPgTypeFromOid(oid: Oid): PgType | null {
 		// 	return PgType.JsonpathArray;
 
 		default:
+			console.log({ oid })
 			return null;
 	}
 }
@@ -302,17 +303,17 @@ export function pgTypeToTsType(pgType: PgType): ts.TypeNode {
 	switch (pgType) {
 		case PgType.Bool:
 			return BooleanType;
-		// PgType.case Bytea: return "";
+		// case PgType.Bytea: return "";
 		case PgType.Char:
 		case PgType.Text:
 		case PgType.Varchar:
 			return StringType;
-		// PgType.case Name: return "";
+		// case PgType.Name: return "";
 		case PgType.Int8:
 		case PgType.Int2:
 		case PgType.Int4:
 			return NumberType;
-		// PgType.case Oid: return "";
+		// case PgType.Oid: return "";
 		case PgType.Json:
 		case PgType.Jsonb:
 			return factory.createTypeReferenceNode(
@@ -322,86 +323,86 @@ export function pgTypeToTsType(pgType: PgType): ts.TypeNode {
 			return ArrayType(
 				factory.createTypeReferenceNode(factory.createIdentifier('JsonValue'))
 			);
-		// PgType.case Point: return "";
-		// PgType.case Lseg: return "";
-		// PgType.case Path: return "";
-		// PgType.case Box: return "";
-		// PgType.case Polygon: return "";
-		// PgType.case Line: return "";
-		// PgType.case LineArray: return "";
-		// PgType.case Cidr: return "";
-		// PgType.case CidrArray: return "";
-		// PgType.case Float4: return "";
-		// PgType.case Float8: return "";
-		// PgType.case Unknown: return "";
-		// PgType.case Circle: return "";
-		// PgType.case CircleArray: return "";
-		// PgType.case Macaddr8: return "";
-		// PgType.case Macaddr8Array: return "";
-		// PgType.case Macaddr: return "";
-		// PgType.case Inet: return "";
-		// PgType.case BoolArray: return "";
-		// PgType.case ByteaArray: return "";
-		// PgType.case CharArray: return "";
-		// PgType.case NameArray: return "";
-		// PgType.case Int2Array: return "";
-		// PgType.case Int4Array: return "";
-		// PgType.case TextArray: return "";
-		// PgType.case BpcharArray: return "";
-		// PgType.case VarcharArray: return "";
-		// PgType.case Int8Array: return "";
-		// PgType.case PointArray: return "";
-		// PgType.case LsegArray: return "";
-		// PgType.case PathArray: return "";
-		// PgType.case BoxArray: return "";
-		// PgType.case Float4Array: return "";
-		// PgType.case Float8Array: return "";
-		// PgType.case PolygonArray: return "";
-		// PgType.case OidArray: return "";
-		// PgType.case MacaddrArray: return "";
-		// PgType.case InetArray: return "";
-		// PgType.case Bpchar: return "";
+		// case PgType.Point: return "";
+		// case PgType.Lseg: return "";
+		// case PgType.Path: return "";
+		// case PgType.Box: return "";
+		// case PgType.Polygon: return "";
+		// case PgType.Line: return "";
+		// case PgType.LineArray: return "";
+		// case PgType.Cidr: return "";
+		// case PgType.CidrArray: return "";
+		// case PgType.Float4: return "";
+		// case PgType.Float8: return "";
+		// case PgType.Unknown: return "";
+		// case PgType.Circle: return "";
+		// case PgType.CircleArray: return "";
+		// case PgType.Macaddr8: return "";
+		// case PgType.Macaddr8Array: return "";
+		// case PgType.Macaddr: return "";
+		// case PgType.Inet: return "";
+		// case PgType.BoolArray: return "";
+		// case PgType.ByteaArray: return "";
+		// case PgType.CharArray: return "";
+		// case PgType.NameArray: return "";
+		case PgType.Int2Array:
+		case PgType.Int4Array:
+		case PgType.Int8Array: return ArrayType(NumberType);
+		case PgType.VarcharArray:
+		case PgType.TextArray: return ArrayType(StringType);
+		// case PgType.BpcharArray: return "";
+		// case PgType.PointArray: return "";
+		// case PgType.LsegArray: return "";
+		// case PgType.PathArray: return "";
+		// case PgType.BoxArray: return "";
+		// case PgType.Float4Array: return "";
+		// case PgType.Float8Array: return "";
+		// case PgType.PolygonArray: return "";
+		// case PgType.OidArray: return "";
+		// case PgType.MacaddrArray: return "";
+		// case PgType.InetArray: return "";
+		// case PgType.Bpchar: return "";
 		case PgType.Date:
 		case PgType.Time:
 		case PgType.Timestamp:
 		case PgType.Timestamptz:
 			return DateType;
-		// PgType.case TimestampArray: return "";
-		// PgType.case DateArray: return "";
-		// PgType.case TimeArray: return "";
-		// PgType.case TimestamptzArray: return "";
-		// PgType.case Interval: return "";
-		// PgType.case IntervalArray: return "";
-		// PgType.case NumericArray: return "";
-		// PgType.case Timetz: return "";
-		// PgType.case TimetzArray: return "";
-		// PgType.case Bit: return "";
-		// PgType.case BitArray: return "";
-		// PgType.case Varbit: return "";
-		// PgType.case VarbitArray: return "";
-		// PgType.case Numeric: return "";
-		// PgType.case Record: return "";
-		// PgType.case RecordArray: return "";
-		// PgType.case Uuid: return "";
-		// PgType.case UuidArray: return "";
-		// PgType.case Jsonb: return "";
-		// PgType.case JsonbArray: return "";
-		// PgType.case Int4Range: return "";
-		// PgType.case Int4RangeArray: return "";
-		// PgType.case NumRange: return "";
-		// PgType.case NumRangeArray: return "";
-		// PgType.case TsRange: return "";
-		// PgType.case TsRangeArray: return "";
-		// PgType.case TstzRange: return "";
-		// PgType.case TstzRangeArray: return "";
-		// PgType.case DateRange: return "";
-		// PgType.case DateRangeArray: return "";
-		// PgType.case Int8Range: return "";
-		// PgType.case Int8RangeArray: return "";
-		// PgType.case Jsonpath: return "";
-		// PgType.case JsonpathArray: return "";
-		// PgType.case Money: return "";
-		// PgType.case MoneyArray: return "";
-		// PgType.case Void: return "";
+		// case PgType.TimestampArray: return "";
+		// case PgType.DateArray: return "";
+		// case PgType.TimeArray: return "";
+		// case PgType.TimestamptzArray: return "";
+		// case PgType.Interval: return "";
+		// case PgType.IntervalArray: return "";
+		// case PgType.NumericArray: return "";
+		// case PgType.Timetz: return "";
+		// case PgType.TimetzArray: return "";
+		// case PgType.Bit: return "";
+		// case PgType.BitArray: return "";
+		// case PgType.Varbit: return "";
+		// case PgType.VarbitArray: return "";
+		// case PgType.Numeric: return "";
+		// case PgType.Record: return "";
+		// case PgType.RecordArray: return "";
+		// case PgType.Uuid: return "";
+		// case PgType.UuidArray: return "";
+		// case PgType.Jsonb: return "";
+		// case PgType.JsonbArray: return "";
+		// case PgType.Int4Range: return "";
+		// case PgType.Int4RangeArray: return "";
+		// case PgType.NumRange: return "";
+		// case PgType.NumRangeArray: return "";
+		// case PgType.TsRange: return "";
+		// case PgType.TsRangeArray: return "";
+		// case PgType.TstzRange: return "";
+		// case PgType.TstzRangeArray: return "";
+		// case PgType.DateRange: return "";
+		// case PgType.DateRangeArray: return "";
+		// case PgType.Int8Range: return "";
+		// case PgType.Int8RangeArray: return "";
+		// case PgType.Jsonpath: return "";
+		// case PgType.JsonpathArray: return "";
+		// case PgType.Money: return "";
+		// case PgType.MoneyArray: return "";
+		// case PgType.Void: return "";
 	}
 }

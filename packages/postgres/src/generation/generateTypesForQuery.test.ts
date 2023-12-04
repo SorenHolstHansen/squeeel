@@ -84,3 +84,37 @@ CREATE TABLE post (
 ]`);
 });
 
+test("can generate types for enums", async () => {
+	await client.query(`
+CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');
+CREATE TABLE person (
+    name text,
+    current_mood mood
+);
+`);
+
+	const res = await generateTypesForQuery("SELECT current_mood FROM person", client);
+	expect(printNode(res.outputType)).toBe(`{
+		current_mood: "sad" | "ok" | "happy";
+}`)
+})
+
+test("can generate types for arrays", async () => {
+	await client.query(`
+CREATE TABLE person (
+    name text
+);
+INSERT INTO person (name) VALUES ('a'), ('b');
+`);
+	const res = await generateTypesForQuery("SELECT ARRAY_AGG(name) AS names FROM person", client);
+	expect(printNode(res.outputType)).toBe(`{
+    array_agg(name)?: string[];
+}`)
+})
+
+test.only("can handle basic aliases", async () => {
+	const res = await generateTypesForQuery("SELECT 1 AS result", client);
+	expect(printNode(res.outputType)).toBe(`{
+    result: 1;
+}`)
+})
