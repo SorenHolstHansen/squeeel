@@ -9,6 +9,7 @@ CREATE TABLE post (
     title          TEXT NOT NULL UNIQUE,
     body           TEXT,
     published      BOOLEAN,
+    details        JSONB,
     likes          INT,
     created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );

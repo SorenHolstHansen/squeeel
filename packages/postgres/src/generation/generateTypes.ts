@@ -3,7 +3,7 @@ import path from 'path';
 import { Client } from 'pg';
 import { Project, printNode } from 'ts-morph';
 import { ts } from 'ts-morph';
-import { GeneratedTypes, newGenerateTypeForQuery } from './newGenerateTypes';
+import { GeneratedTypes, generateTypesForQuery } from './generateTypesForQuery';
 const { factory } = ts;
 
 export async function generateTypesForQueries(
@@ -14,7 +14,7 @@ export async function generateTypesForQueries(
 	await client.connect();
 	const types = await Promise.all(
 		queries.map(async (query) => {
-			return [query, await newGenerateTypeForQuery(query, client)] as [
+			return [query, await generateTypesForQuery(query, client)] as [
 				string,
 				GeneratedTypes,
 			];
@@ -29,7 +29,7 @@ export async function generateTypesForQueries(
 		factory.createIdentifier('GeneratedTypes'),
 		undefined,
 		factory.createTypeLiteralNode(
-			types.map(([query, { outputType, inputParameterType }]) =>
+			types.map(([query, { outputType, argType }]) =>
 				factory.createPropertySignature(
 					undefined,
 					factory.createStringLiteral(query),
@@ -39,7 +39,7 @@ export async function generateTypesForQueries(
 							undefined,
 							factory.createIdentifier('inputType'),
 							undefined,
-							inputParameterType
+							argType
 						),
 						factory.createPropertySignature(
 							undefined,
