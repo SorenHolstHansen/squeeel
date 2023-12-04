@@ -42,4 +42,5 @@ await client.end();
 ```
 
 ## Examples
+
 Try going into the examples/postgres/basic, start a postgres database, and run the migration in the migration file. After that, run `bun run index.ts`, then (possibly after restarting your lsp), you should now have the right types for the query results.
