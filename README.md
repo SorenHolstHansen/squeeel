@@ -1,6 +1,6 @@
 # squeal
 
-POC of a compile time type generating sql client.
+POC of a compile time type generating sql client in bun.
 
 ## Usage (Postgres)
 
