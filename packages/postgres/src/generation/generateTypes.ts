@@ -10,8 +10,7 @@ const { factory } = ts;
 export async function generateTypesForQueries(
   queries: string[],
 ): Promise<void> {
-  const database_url = "postgres://postgres:postgres@localhost:5432/postgres";
-  const client = new Client({ connectionString: database_url });
+  const client = new Client();
   await client.connect();
   const enums = await generateTypesForEnums(client);
   const types = await Promise.all(
