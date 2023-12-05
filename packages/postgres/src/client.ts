@@ -1,4 +1,4 @@
-import { GeneratedTypes } from "../_squeal_generated_types";
+import { GeneratedTypes } from "../_squeeel_generated_types";
 import {
   Client as PgClient,
   ClientConfig,

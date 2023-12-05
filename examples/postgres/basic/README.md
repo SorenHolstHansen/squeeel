@@ -1,4 +1,4 @@
-# squeal-example-postgres-basic
+# squeeel-example-postgres-basic
 
 To install dependencies:
 

@@ -1,4 +1,4 @@
-# squeal
+# squeeel
 
 POC of a compile time type generating sql client in bun.
 
@@ -28,8 +28,8 @@ CREATE TABLE post (
 You will get build-time generated queries like this. That is, you write the following, and after running `bun build <file>` you will get the types in the comments
 
 ```ts
-import { q } from '@squeal/postgres' with { type: 'macro' };
-import { Client } from '@squeal/postgres'; // PgClient is a wrapper around Client
+import { q } from '@squeeel/postgres' with { type: 'macro' };
+import { Client } from '@squeeel/postgres'; // PgClient is a wrapper around Client
 
 const client = new Client();
 await client.connect();

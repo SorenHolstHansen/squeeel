@@ -1,4 +1,4 @@
-# @squeal/postgres
+# @squeeel/postgres
 
 To install dependencies:
 

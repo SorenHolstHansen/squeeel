@@ -5,7 +5,7 @@ import {
 	JsonType,
 	NumberType,
 	StringType,
-} from '@squeal/core';
+} from '@squeeel/core';
 import { Oid } from './types';
 import { ts } from 'ts-morph';
 

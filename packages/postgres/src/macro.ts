@@ -1,4 +1,4 @@
-import { Loader } from "@squeal/core";
+import { Loader } from "@squeeel/core";
 import { generateTypesForQueries } from "./generation/generateTypes";
 
 const loader = new Loader(generateTypesForQueries);

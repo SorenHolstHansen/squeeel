@@ -1,4 +1,4 @@
-import { ExportKeyword, JsonValueType } from "@squeal/core";
+import { ExportKeyword, JsonValueType } from "@squeeel/core";
 import path from "path";
 import { Client } from "pg";
 import { Project, printNode } from "ts-morph";
@@ -58,7 +58,7 @@ export async function generateTypesForQueries(
   sourceFile.addStatements(printNode(GeneratedTypes));
 
   Bun.write(
-    path.join(__dirname, "../../_squeal_generated_types.ts"),
+    path.join(__dirname, "../../_squeeel_generated_types.ts"),
     sourceFile.getFullText(),
   );
 }

@@ -1,4 +1,4 @@
-import { QuestionMarkToken, UnknownType, generateId } from "@squeal/core";
+import { QuestionMarkToken, UnknownType, generateId } from "@squeeel/core";
 import { Client } from "pg";
 import { pgTypeToTsType, tryGetPgTypeFromOid } from "./typeInfo";
 import { ts } from "ts-morph";

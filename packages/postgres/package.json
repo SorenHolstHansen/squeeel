@@ -1,9 +1,10 @@
 {
-  "name": "@squeal/postgres",
+  "name": "@squeeel/postgres",
+  "version": "0.0.1",
   "module": "index.ts",
   "type": "module",
   "dependencies": {
-    "@squeal/core": "workspace:*",
+    "@squeeel/core": "workspace:*",
     "pg": "^8.11.3"
   },
   "devDependencies": {

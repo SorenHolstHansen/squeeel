@@ -1,5 +1,5 @@
-import { q } from '@squeal/postgres' with { type: 'macro' };
-import { Client } from '@squeal/postgres';
+import { q } from '@squeeel/postgres' with { type: 'macro' };
+import { Client } from '@squeeel/postgres';
 
 const client = new Client("postgres://postgres:postgres@localhost:5432/postgres");
 await client.connect();
