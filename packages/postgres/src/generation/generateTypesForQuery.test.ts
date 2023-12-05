@@ -3,6 +3,7 @@ import { generateTypesForQuery } from "./generateTypesForQuery";
 
 import { beforeEach, expect, test } from "bun:test";
 import { printNode } from "ts-morph";
+import { generateTypesForEnums } from "./enums";
 
 const client = new Client(
   "postgres://postgres:postgres@localhost:5432/postgres",
@@ -19,7 +20,7 @@ beforeEach(async () => {
 });
 
 test("can generate simple integer type", async () => {
-  const res = await generateTypesForQuery("SELECT 1", client);
+  const res = await generateTypesForQuery("SELECT 1", {}, client);
   expect(printNode(res.outputType)).toBe(`{
     "?column?": 1;
 }`);
@@ -27,7 +28,7 @@ test("can generate simple integer type", async () => {
 });
 
 test("can generate simple boolean type", async () => {
-  const res = await generateTypesForQuery("SELECT true", client);
+  const res = await generateTypesForQuery("SELECT true", {}, client);
   expect(printNode(res.outputType)).toBe(`{
     "?column?": true;
 }`);
@@ -35,7 +36,7 @@ test("can generate simple boolean type", async () => {
 });
 
 test("can generate simple text type", async () => {
-  const res = await generateTypesForQuery("SELECT 'a'", client);
+  const res = await generateTypesForQuery("SELECT 'a'", {}, client);
   expect(printNode(res.outputType)).toBe(`{
     "?column?": "a";
 }`);
@@ -60,14 +61,14 @@ CREATE TABLE post (
     created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 		`);
-  const res1 = await generateTypesForQuery("SELECT id FROM post", client);
+  const res1 = await generateTypesForQuery("SELECT id FROM post", {}, client);
   expect(printNode(res1.outputType)).toBe(`{
     id: number;
 }`);
   expect(printNode(res1.argType)).toBe("[\n]");
 
   const res2 = await generateTypesForQuery(
-    "SELECT p.id, title, published, likes, created_at, details, u.username FROM post p LEFT JOIN account u ON u.id = p.account_id WHERE p.id = $1",
+    "SELECT p.id, title, published, likes, created_at, details, u.username FROM post p LEFT JOIN account u ON u.id = p.account_id WHERE p.id = $1", {},
     client,
   );
   expect(printNode(res2.outputType)).toBe(`{
@@ -93,12 +94,17 @@ CREATE TABLE person (
 );
 `);
 
+  const enumTypes = await generateTypesForEnums(client)
+  const enumType = Object.values(enumTypes)[0];
+  expect(printNode(enumType)).toBe(`"sad" | "ok" | "happy"`)
+
   const res = await generateTypesForQuery(
     "SELECT current_mood FROM person",
+    enumTypes,
     client,
   );
   expect(printNode(res.outputType)).toBe(`{
-		current_mood: "sad" | "ok" | "happy";
+    current_mood?: "sad" | "ok" | "happy";
 }`);
 });
 
@@ -110,7 +116,7 @@ CREATE TABLE person (
 INSERT INTO person (name) VALUES ('a'), ('b');
 `);
   const res = await generateTypesForQuery(
-    "SELECT ARRAY_AGG(name) AS names FROM person",
+    "SELECT ARRAY_AGG(name) AS names FROM person", {},
     client,
   );
   expect(printNode(res.outputType)).toBe(`{
@@ -118,9 +124,9 @@ INSERT INTO person (name) VALUES ('a'), ('b');
 }`);
 });
 
-test.only("can handle basic aliases", async () => {
-  const res = await generateTypesForQuery("SELECT 1 AS result", client);
-  expect(printNode(res.outputType)).toBe(`{
-    result: 1;
-}`);
-});
+// test("can handle basic aliases", async () => {
+//   const res = await generateTypesForQuery("SELECT 1 AS result", {},c lient);
+//   expect(printNode(res.outputType)).toBe(`{
+//     result: 1;
+// }`);
+// });

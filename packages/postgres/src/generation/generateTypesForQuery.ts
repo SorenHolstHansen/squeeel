@@ -27,31 +27,31 @@ type ResultQueryPlan = {
 
 type QueryPlan =
   | {
-      "Node Type": string;
+    "Node Type": string;
+    // e.g. "post"
+    "Relation Name": string;
+    // e.g. "public"
+    Schema: string;
+    // e.g. "post" or "p"
+    Alias: string;
+    // e.g. ["id"] or with alias like ["p.id"]
+    Output: string[];
+  }
+  | {
+    // e.g. ["p.id", "p.title", "p.likes", "u.username"]
+    "Node Type": string;
+    Output: string[];
+    Plans: {
       // e.g. "post"
       "Relation Name": string;
       // e.g. "public"
       Schema: string;
-      // e.g. "post" or "p"
+      // e.g. "p" or "post"
       Alias: string;
-      // e.g. ["id"] or with alias like ["p.id"]
+      // e.g. ["p.id", "p.title", "p.likes"]
       Output: string[];
-    }
-  | {
-      // e.g. ["p.id", "p.title", "p.likes", "u.username"]
-      "Node Type": string;
-      Output: string[];
-      Plans: {
-        // e.g. "post"
-        "Relation Name": string;
-        // e.g. "public"
-        Schema: string;
-        // e.g. "p" or "post"
-        Alias: string;
-        // e.g. ["p.id", "p.title", "p.likes"]
-        Output: string[];
-      }[];
-    }
+    }[];
+  }
   | ResultQueryPlan;
 
 export type GeneratedTypes = {
@@ -61,6 +61,7 @@ export type GeneratedTypes = {
 
 export async function generateTypesForQuery(
   query: string,
+  enums: Record<Oid, ts.UnionTypeNode>,
   client: Client,
 ): Promise<GeneratedTypes> {
   const id = generateId();
@@ -92,7 +93,6 @@ export async function generateTypesForQuery(
     `EXPLAIN (VERBOSE, FORMAT JSON) EXECUTE sample_query_${id}(NULL);`,
   );
   const queryPlan: QueryPlan = result2.rows[0]["QUERY PLAN"][0]["Plan"];
-  console.log(queryPlan);
   if (queryPlan["Node Type"] === "Result") {
     // Really simple case, just something like select 1, 'a'
     // Since objects can't have duplicate field names, this will result in the last output only
@@ -114,7 +114,6 @@ export async function generateTypesForQuery(
         lastOutput.replace("::text", "").replace(/'/g, ""),
       );
     }
-    // TODO: remove ::text and stuff. This is not a frequent case, so will postpone it
     const outputType = factory.createTypeLiteralNode([
       factory.createPropertySignature(
         undefined,
@@ -151,8 +150,8 @@ export async function generateTypesForQuery(
       const oid = result_types[i];
       i += 1;
       const pgType = tryGetPgTypeFromOid(oid);
-      if (pgType != null) {
-        const typeNode = pgTypeToTsType(pgType);
+      const typeNode = pgType != null ? pgTypeToTsType(pgType) : enums[oid];
+      if (typeNode != null) {
         typeElements.push(
           factory.createPropertySignature(
             undefined,
@@ -196,8 +195,8 @@ export async function generateTypesForQuery(
       const oid = result_types[i];
       i += 1;
       const pgType = tryGetPgTypeFromOid(oid);
-      if (pgType != null) {
-        const typeNode = pgTypeToTsType(pgType);
+      const typeNode = pgType != null ? pgTypeToTsType(pgType) : enums[oid];
+      if (typeNode != null) {
         typeElements.push(
           factory.createPropertySignature(
             undefined,

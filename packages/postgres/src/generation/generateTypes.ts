@@ -4,6 +4,7 @@ import { Client } from "pg";
 import { Project, printNode } from "ts-morph";
 import { ts } from "ts-morph";
 import { GeneratedTypes, generateTypesForQuery } from "./generateTypesForQuery";
+import { generateTypesForEnums } from "./enums";
 const { factory } = ts;
 
 export async function generateTypesForQueries(
@@ -12,9 +13,10 @@ export async function generateTypesForQueries(
   const database_url = "postgres://postgres:postgres@localhost:5432/postgres";
   const client = new Client({ connectionString: database_url });
   await client.connect();
+  const enums = await generateTypesForEnums(client);
   const types = await Promise.all(
     queries.map(async (query) => {
-      return [query, await generateTypesForQuery(query, client)] as [
+      return [query, await generateTypesForQuery(query, enums, client)] as [
         string,
         GeneratedTypes,
       ];
