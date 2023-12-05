@@ -1,6 +1,6 @@
 {
   "name": "squeeel-example-postgres-basic",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "module": "index.ts",
   "type": "module",
