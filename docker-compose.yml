@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:16
+    hostname: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - my_network
+    restart: unless-stopped
+    healthcheck:
+      test: pg_isready -d postgres -U postgres
+      interval: 500ms
+      timeout: 1s
+      retries: 100
+
+networks:
+  my_network:
+    driver: bridge

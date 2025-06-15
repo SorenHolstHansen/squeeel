@@ -1,13 +1,9 @@
 use serde::Deserialize;
 use simple_logger::SimpleLogger;
-use sqlx::{Describe, PgPool};
-use sqlx::{Error, Executor, Postgres};
 use squeeel_cli::AstVisitor;
-use squeeel_cli::Dialect;
 use squeeel_cli::Query;
 use squeeel_cli::SupportedLib;
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::env;
 use std::path::Path;
 use std::path::PathBuf;
@@ -72,20 +68,23 @@ fn main() -> anyhow::Result<()> {
             .join(", ")
     );
 
-    let statements = detect_statements(&dir, sql_libs);
-    println!("{:#?}", statements);
-    let described_statements = tokio::runtime::Builder::new_multi_thread()
+    let queries = detect_queries(&dir, sql_libs);
+    let queries_by_lib: HashMap<SupportedLib, Vec<String>> =
+        queries.into_iter().fold(HashMap::new(), |mut acc, query| {
+            acc.entry(query.lib).or_default().push(query.query);
+            acc
+        });
+
+    tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()
         .unwrap()
-        .block_on(async { describe_statements(root_dir, statements).await });
-
-    println!("{:#?}", described_statements);
+        .block_on(async { create_d_ts_files(root_dir, queries_by_lib).await });
 
     Ok(())
 }
 
-fn detect_statements(dir: &Path, supported_libs: Vec<SupportedLib>) -> Vec<Query> {
+fn detect_queries(dir: &Path, supported_libs: Vec<SupportedLib>) -> Vec<Query> {
     let supported_libs = Arc::new(supported_libs);
     let mut handles = Vec::new();
     for entry in walkdir::WalkDir::new(dir) {
@@ -133,33 +132,11 @@ fn detect_statements(dir: &Path, supported_libs: Vec<SupportedLib>) -> Vec<Query
         .collect()
 }
 
-struct QueryWithDescription<Db: sqlx::Database> {
-    lib: SupportedLib,
-    query: String,
-    describe: Describe<Db>,
-}
-
-async fn describe_statements(
-    dir: &Path,
-    statements: Vec<Query>,
-) -> Vec<(Describe<Postgres>, Query)> {
-    dotenvy::from_filename(dir.join(".env")).unwrap();
-    let database_url = std::env::var("DATABASE_URL").expect("Expected database url");
-    let dialects = statements
-        .iter()
-        .map(|stmt| Dialect::from(&stmt.lib))
-        .collect::<HashSet<_>>();
-    let pool = PgPool::connect(&database_url).await.unwrap();
-
-    let mut tasks = Vec::with_capacity(statements.len());
-    for statement in statements {
-        let stmt = statement.clone();
-        let pool = pool.clone();
+async fn create_d_ts_files(dir: &Path, queries_by_lib: HashMap<SupportedLib, Vec<String>>) {
+    let mut tasks = Vec::with_capacity(queries_by_lib.keys().len());
+    for (lib, queries) in queries_by_lib {
         tasks.push(tokio::spawn({
-            async move {
-                let mut conn = pool.acquire().await.unwrap();
-                (conn.describe(&stmt.query.clone()).await.unwrap(), stmt)
-            }
+            async move { lib.create_d_ts_file(queries).await }
         }));
     }
 
@@ -167,6 +144,6 @@ async fn describe_statements(
     for task in tasks {
         outputs.push(task.await.unwrap());
     }
-
-    outputs
+    let d_ts_path = dir.join("src/squeeel.d.ts");
+    std::fs::write(d_ts_path, outputs.join("\n\n")).unwrap();
 }
