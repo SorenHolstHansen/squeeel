@@ -51,6 +51,7 @@ const result = await client.query(
 | Library                                                      | Considerations                                                         |
 |--------------------------------------------------------------|------------------------------------------------------------------------|
 | [node-postgres](https://node-postgres.com/)                  |                                                                        |
+| [mysql2](https://sidorares.github.io/node-mysql2/docs)       |                                                                        |
 | [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) | You need to remove `@types/better-sqlite3`, we will provide the types. |
 
 [More libraries coming soon](https://github.com/SorenHolstHansen/squeeel/issues/1)
