@@ -11,6 +11,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 use swc_common::SourceMap;
 use swc_common::sync::Lrc;
+use swc_ecma_codegen::{Emitter, text_writer::JsWriter};
 use swc_ecma_parser::TsSyntax;
 use swc_ecma_parser::{Parser, StringInput, Syntax, lexer::Lexer};
 
@@ -144,6 +145,27 @@ async fn create_d_ts_files(dir: &Path, queries_by_lib: HashMap<SupportedLib, Vec
     for task in tasks {
         outputs.push(task.await.unwrap());
     }
+
+    let cm: Lrc<SourceMap> = Default::default();
+    let code = {
+        let mut buf = Vec::new();
+
+        {
+            let mut emitter = Emitter {
+                cfg: Default::default(),
+                cm: cm.clone(),
+                comments: None,
+                wr: JsWriter::new(cm, "\n", &mut buf, None),
+            };
+
+            for module in outputs {
+                emitter.emit_module(&module).unwrap();
+            }
+        }
+
+        String::from_utf8_lossy(&buf).to_string()
+    };
+
     let d_ts_path = dir.join("src/squeeel.d.ts");
-    std::fs::write(d_ts_path, outputs.join("\n\n")).unwrap();
+    std::fs::write(d_ts_path, code).unwrap();
 }

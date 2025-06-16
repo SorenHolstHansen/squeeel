@@ -1,17 +1,14 @@
-import type { QueryResult } from "pg";
-
-type JsonValue = string | number | boolean | null | { [Key in string]?: JsonValue } | JsonValue[];
-
+import type { QueryResult } from 'pg';
+type JsonValue = string | number | boolean | null | {
+    [Key in string]?: JsonValue;
+} | JsonValue[];
 type Queries = {
     [`SELECT $1::text as message`]: {
-    returnType: {
-            /** 
-             * Postgres data type: `TEXT`.
-             */
-            message: string | null,
-        },
-    args: [string]
-},
+        "returnType": {
+            "message"?: string | undefined;
+        };
+        "args": [string];
+    };
     [`
         SELECT 
 		$1::text as message,
@@ -46,157 +43,59 @@ type Queries = {
 		'matt'::name as name,
 		1::oid
         `]: {
-    returnType: {
-            /** 
-             * Postgres data type: `TEXT`.
-             */
-            message: string | null,
-            /** 
-             * Postgres data type: `TEXT`.
-             */
-            null: string | null,
-            /** 
-             * Postgres data type: `BOOL`.
-             */
-            bool: boolean | null,
-            /** 
-             * Postgres data type: `INT2`.
-             */
-            smallint: number | null,
-            /** 
-             * Postgres data type: `INT4`.
-             */
-            integer: number | null,
-            /** 
-             * Postgres data type: `INT8`.
-             */
-            bigint: string | null,
-            /** 
-             * Postgres data type: `FLOAT4`.
-             */
-            real: number | null,
-            /** 
-             * Postgres data type: `FLOAT8`.
-             */
-            double: number | null,
-            /** 
-             * Postgres data type: `CHAR`.
-             */
-            char: string | null,
-            /** 
-             * Postgres data type: `TEXT`.
-             */
-            string: string | null,
-            /** 
-             * Postgres data type: `BIT`.
-             */
-            bit: string | null,
-            /** 
-             * Postgres data type: `VARBIT`.
-             */
-            varbit: string | null,
-            /** 
-             * Postgres data type: `BYTEA`.
-             */
-            bytea: Buffer | null,
-            /** 
-             * Postgres data type: `BOX`.
-             */
-            box: string | null,
-            /** 
-             * Postgres data type: `POINT`.
-             */
-            point: {x: number, y: number} | null,
-            /** 
-             * Postgres data type: `PATH`.
-             */
-            path: string | null,
-            /** 
-             * Postgres data type: `POLYGON`.
-             */
-            polygon: string | null,
-            /** 
-             * Postgres data type: `LINE`.
-             */
-            line: string | null,
-            /** 
-             * Postgres data type: `LSEG`.
-             */
-            lseg: string | null,
-            /** 
-             * Postgres data type: `CIRCLE`.
-             */
-            circle: {
-        x: number;
-        y: number;
-        radius: number;
-    } | null,
-            /** 
-             * Postgres data type: `INTERVAL`.
-             */
-            interval: {
-        milliseconds?: number;
-        seconds?: number;
-        minutes?: number;
-        hours?: number;
-        days?: number;
-        months?: number;
-        years?: number;
-        toPostgres: Function;
-        toISO: Function;
-        toISOString: Function;
-    } | null,
-            /** 
-             * Postgres data type: `JSON`.
-             */
-            json: JsonValue | null,
-            /** 
-             * Postgres data type: `UUID`.
-             */
-            uuid: string | null,
-            /** 
-             * Postgres data type: `DATE`.
-             */
-            date: Date | null,
-            /** 
-             * Postgres data type: `CIDR`.
-             */
-            cidr: string | null,
-            /** 
-             * Postgres data type: `INET`.
-             */
-            inet: string | null,
-            /** 
-             * Postgres data type: `MACADDR`.
-             */
-            macaddr: string | null,
-            /** 
-             * Postgres data type: `MACADDR8`.
-             */
-            macaddr8: string | null,
-            /** 
-             * Postgres data type: `MONEY`.
-             */
-            numeric: string | null,
-            /** 
-             * Postgres data type: `NAME`.
-             */
-            name: string | null,
-            /** 
-             * Postgres data type: `OID`.
-             */
-            oid: number | null,
-        },
-    args: [string]
-},
-
+        "returnType": {
+            "message"?: string | undefined;
+            "null"?: string | undefined;
+            "bool"?: boolean | undefined;
+            "smallint"?: number | undefined;
+            "integer"?: number | undefined;
+            "bigint"?: string | undefined;
+            "real"?: number | undefined;
+            "double"?: number | undefined;
+            "char"?: string | undefined;
+            "string"?: string | undefined;
+            "bit"?: string | undefined;
+            "varbit"?: string | undefined;
+            "bytea"?: Buffer | undefined;
+            "box"?: string | undefined;
+            "point"?: {
+                "x": number;
+                "y": number;
+            } | undefined;
+            "path"?: string | undefined;
+            "polygon"?: string | undefined;
+            "line"?: string | undefined;
+            "lseg"?: string | undefined;
+            "circle"?: {
+                "x": number;
+                "y": number;
+                "radius": number;
+            } | undefined;
+            "interval"?: {
+                "milliseconds"?: number;
+                "seconds"?: number;
+                "minutes"?: number;
+                "hours"?: number;
+                "days"?: number;
+                "months"?: number;
+                "years"?: number;
+            } | undefined;
+            "json"?: JsonValue | undefined;
+            "uuid"?: string | undefined;
+            "date"?: Date | undefined;
+            "cidr"?: string | undefined;
+            "inet"?: string | undefined;
+            "macaddr"?: string | undefined;
+            "macaddr8"?: string | undefined;
+            "numeric"?: string | undefined;
+            "name"?: string | undefined;
+            "oid"?: number | undefined;
+        };
+        "args": [string];
+    };
 };
-
-declare module 'pg' {
+declare module "pg" {
     export interface ClientBase {
-    	query<T extends string>(
-            q: T,
-            args: T extends keyof Queries ? Queries[T]["args"] : unknown
-        ): Promise<T extends keyof Queries ? QueryResult<Queries[T]["returnType"]> : unknown>;
+        "query"<T extends string>(q: T, args: T extends keyof Queries ? Queries[T]["args"] : unknown): Promise<T extends keyof Queries ? QueryResult<Queries[T]["returnType"]> : unknown>;
     }
 }
