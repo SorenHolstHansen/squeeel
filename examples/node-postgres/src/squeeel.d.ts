@@ -1,14 +1,8 @@
-import type { QueryResult } from 'pg';
+import type { QueryResult } from "pg";
 type JsonValue = string | number | boolean | null | {
     [Key in string]?: JsonValue;
 } | JsonValue[];
 type Queries = {
-    [`SELECT $1::text as message`]: {
-        "returnType": {
-            "message"?: string | undefined;
-        };
-        "args": [string];
-    };
     [`
         SELECT 
 		$1::text as message,

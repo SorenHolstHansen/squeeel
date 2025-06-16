@@ -1,9 +1,8 @@
 use swc_atoms::Atom;
-use swc_common::{DUMMY_SP, Span};
+use swc_common::DUMMY_SP;
 use swc_ecma_ast::{
-    Expr, Ident, Str, TsKeywordType, TsLit, TsLitType, TsPropertySignature, TsTupleElement,
-    TsTupleType, TsType, TsTypeAnn, TsTypeElement, TsTypeLit, TsTypeRef, TsUnionOrIntersectionType,
-    TsUnionType,
+    Expr, Ident, TsKeywordType, TsPropertySignature, TsTupleElement, TsTupleType, TsType,
+    TsTypeAnn, TsTypeElement, TsTypeLit, TsTypeRef, TsUnionOrIntersectionType, TsUnionType,
 };
 
 pub const TS_BOOLEAN_TYPE: TsType = TsType::TsKeywordType(TsKeywordType {
@@ -127,16 +126,5 @@ pub fn ts_tuple_type<ElemTypes: IntoIterator<Item = TsType>>(types: ElemTypes) -
                 ty: Box::new(ty),
             })
             .collect(),
-    })
-}
-
-pub fn ts_lit_type<Value: Into<Atom>>(value: Value) -> TsType {
-    TsType::TsLitType(TsLitType {
-        span: Span::default(),
-        lit: TsLit::Str(Str {
-            span: Span::default(),
-            value: value.into(),
-            raw: None,
-        }),
     })
 }

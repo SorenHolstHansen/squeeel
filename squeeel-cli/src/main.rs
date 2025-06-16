@@ -134,6 +134,7 @@ fn detect_queries(dir: &Path, supported_libs: Vec<SupportedLib>) -> Vec<Query> {
 }
 
 async fn create_d_ts_files(dir: &Path, queries_by_lib: HashMap<SupportedLib, Vec<String>>) {
+    println!("{:#?}", queries_by_lib);
     let mut tasks = Vec::with_capacity(queries_by_lib.keys().len());
     for (lib, queries) in queries_by_lib {
         tasks.push(tokio::spawn({

@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "ESNext"
+    ],
+    "outDir": "lib",
+    "target": "ES6",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules/**/*"
+  ]
+}

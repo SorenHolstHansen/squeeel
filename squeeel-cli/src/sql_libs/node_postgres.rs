@@ -1,20 +1,12 @@
 use super::SupportedLib;
 use crate::utils::ts_types::{
-    TS_BOOLEAN_TYPE, TS_NULL_TYPE, TS_NUMBER_TYPE, TS_STRING_TYPE, TS_UNKNOWN_TYPE, ts_lit_type,
-    ts_object_type, ts_type_ref,
+    TS_BOOLEAN_TYPE, TS_NUMBER_TYPE, TS_STRING_TYPE, TS_UNKNOWN_TYPE, ts_object_type, ts_type_ref,
 };
 use crate::{sql_libs::SqlLib, visitor::Query};
 use sqlx_core::type_info::TypeInfo;
-use swc_common::Span;
-use swc_ecma_ast::{
-    BindingIdent, Decl, ExportDecl, ImportDecl, ImportNamedSpecifier, ImportPhase, ImportSpecifier,
-    ModuleDecl, ModuleItem, Stmt, Str, TruePlusMinus, TsArrayType, TsConditionalType, TsEntityName,
-    TsFnParam, TsIndexedAccessType, TsInterfaceBody, TsInterfaceDecl, 
-    TsMappedType, TsMethodSignature, TsModuleBlock, TsModuleDecl, TsModuleName, TsNamespaceBody,
-    TsType, TsTypeAliasDecl, TsTypeAnn, TsTypeElement, TsTypeOperator, TsTypeOperatorOp,
-    TsTypeParam, TsTypeParamDecl, TsTypeParamInstantiation, TsTypeRef, TsUnionOrIntersectionType,
-    TsUnionType,
-};
+use swc_common::BytePos;
+use swc_ecma_ast::{ModuleItem, TsType};
+use swc_ecma_parser::{Lexer, Parser, StringInput, Syntax, TsSyntax};
 
 pub struct NodePostgres;
 
@@ -100,193 +92,43 @@ impl SqlLib for NodePostgres {
     }
 
     fn d_ts_prefix(&self) -> Vec<ModuleItem> {
-        vec![
-            ModuleItem::ModuleDecl(ModuleDecl::Import(ImportDecl {
-                span: Default::default(),
-                specifiers: vec![ImportSpecifier::Named(ImportNamedSpecifier {
-                    span: Default::default(),
-                    local: "QueryResult".into(),
-                    imported: None,
-                    is_type_only: false,
-                })],
-                src: Box::new(Str {
-                    span: Default::default(),
-                    value: "pg".into(),
-                    raw: Some("'pg'".into()),
-                }),
-                type_only: true,
-                with: None,
-                phase: ImportPhase::Evaluation,
-            })),
-            ModuleItem::Stmt(Stmt::Decl(Decl::TsTypeAlias(Box::new(TsTypeAliasDecl {
-                span: Span::default(),
-                declare: false,
-                id: "JsonValue".into(),
-                type_params: None,
-                type_ann: Box::new(TsType::TsUnionOrIntersectionType(
-                    TsUnionOrIntersectionType::TsUnionType(TsUnionType {
-                        span: Span::default(),
-                        types: vec![
-                            Box::new(TS_STRING_TYPE),
-                            Box::new(TS_NUMBER_TYPE),
-                            Box::new(TS_BOOLEAN_TYPE),
-                            Box::new(TS_NULL_TYPE),
-                            Box::new(TsType::TsMappedType(TsMappedType {
-                                span: Span::default(),
-                                readonly: None,
-                                type_param: TsTypeParam {
-                                    span: Span::default(),
-                                    name: "Key".into(),
-                                    is_in: false,
-                                    is_out: false,
-                                    is_const: false,
-                                    constraint: Some(Box::new(TS_STRING_TYPE)),
-                                    default: None,
-                                },
-                                name_type: None,
-                                optional: Some(TruePlusMinus::True),
-                                type_ann: Some(Box::new(ts_type_ref("JsonValue"))),
-                            })),
-                            Box::new(TsType::TsArrayType(TsArrayType {
-                                span: Span::default(),
-                                elem_type: Box::new(ts_type_ref("JsonValue")),
-                            })),
-                        ],
-                    }),
-                )),
-            })))),
-        ]
+        let prefix = r#"import type { QueryResult } from "pg";
+type JsonValue = string | number | boolean | null | {
+    [Key in string]?: JsonValue;
+} | JsonValue[];
+"#;
+        let lexer = Lexer::new(
+            Syntax::Typescript(TsSyntax {
+                ..Default::default()
+            }),
+            Default::default(),
+            StringInput::new(prefix, BytePos(0), BytePos(prefix.len() as u32)),
+            None,
+        );
+        let mut parser = Parser::new_from(lexer);
+        parser.parse_typescript_module().unwrap().body
     }
 
     fn d_ts_suffix(&self) -> Vec<ModuleItem> {
-        vec![ModuleItem::Stmt(Stmt::Decl(Decl::TsModule(Box::new(
-            TsModuleDecl {
-                span: Span::default(),
-                declare: true,
-                global: false,
-                namespace: false,
-                id: TsModuleName::Str(Str {
-                    span: Span::default(),
-                    value: "pg".into(),
-                    raw: None,
-                }),
-                body: Some(TsNamespaceBody::TsModuleBlock(TsModuleBlock {
-                    span: Span::default(),
-                    body: vec![ModuleItem::ModuleDecl(ModuleDecl::ExportDecl(ExportDecl {
-                        span: Span::default(),
-                        decl: Decl::TsInterface(Box::new(TsInterfaceDecl {
-                            span: Span::default(),
-                            id: "ClientBase".into(),
-                            declare: false,
-                            type_params: None,
-                            extends: Vec::new(),
-                            body: TsInterfaceBody {
-                                span: Span::default(),
-                                body: vec![TsTypeElement::TsMethodSignature(TsMethodSignature {
-                                    span: Span::default(),
-                                    key: "query".into(),
-                                    computed: false,
-                                    optional: false,
-                                    params: vec![
-                                        TsFnParam::Ident(BindingIdent {
-                                            id: "q".into(),
-                                            type_ann: Some(Box::new(TsTypeAnn {
-                                                span: Span::default(),
-                                                type_ann: Box::new(ts_type_ref("T")),
-                                            })),
-                                        }),
-                                        TsFnParam::Ident(BindingIdent {
-                                            id: "args".into(),
-                                            type_ann: Some(Box::new(TsTypeAnn {
-                                                span: Span::default(),
-                                                type_ann: Box::new(TsType::TsConditionalType(
-                                                    TsConditionalType {
-                                                        span: Span::default(),
-                                                        check_type: Box::new(ts_type_ref("T")),
-                                                        extends_type: Box::new(
-                                                            TsType::TsTypeOperator(
-                                                                TsTypeOperator {
-                                                                    span: Span::default(),
-                                                                    op: TsTypeOperatorOp::KeyOf,
-                                                                    type_ann: Box::new(
-                                                                        ts_type_ref("Queries"),
-                                                                    ),
-                                                                },
-                                                            ),
-                                                        ),
-                                                        true_type: Box::new(
-                                                            TsType::TsIndexedAccessType(
-                                                                TsIndexedAccessType {
-                                                                    span: Span::default(),
-                                                                    readonly: false,
-                                                                    obj_type: Box::new(
-                                                                        TsType::TsIndexedAccessType(
-                                                                            TsIndexedAccessType {
-                                                                                span: Span::default(
-                                                                                ),
-                                                                                readonly: false,
-                                                                                obj_type: Box::new(
-                                                                                    ts_type_ref(
-                                                                                        "Queries",
-                                                                                    ),
-                                                                                ),
-                                                                                index_type:
-                                                                                    Box::new(
-                                                                                        ts_type_ref(
-                                                                                            "T",
-                                                                                        ),
-                                                                                    ),
-                                                                            },
-                                                                        ),
-                                                                    ),
-                                                                    index_type: Box::new(ts_lit_type("args")),
-                                                                },
-                                                            ),
-                                                        ),
-                                                        false_type: Box::new(TS_UNKNOWN_TYPE),
-                                                    },
-                                                )),
-                                            })),
-                                        }),
-                                    ],
-                                    type_ann: Some(Box::new(TsTypeAnn {
-                                        span: Span::default(),
-                                        type_ann: Box::new(TsType::TsTypeRef(TsTypeRef {
-                                            span:Span::default(),
-                                            type_name: TsEntityName::Ident("Promise".into()),
-                                            type_params: Some(Box::new(TsTypeParamInstantiation {
-                                                span: Span::default(),
-                                                params: vec![Box::new(TsType::TsConditionalType (TsConditionalType {
-                                                    span: Span::default(),
-                                                    check_type: Box::new(ts_type_ref("T")),
-                                                    extends_type: Box::new(TsType::TsTypeOperator(TsTypeOperator {
-                                                        span: Span::default(),
-                                                        op: TsTypeOperatorOp::KeyOf,
-                                                        type_ann: Box::new(ts_type_ref("Queries"))
-                                                    })),
-                                                    true_type: Box::new(TsType::TsTypeRef(TsTypeRef {
-                                                        span: Span::default(),
-                                                        type_name: TsEntityName::Ident("QueryResult".into()),
-                                                        type_params: Some(Box::new(TsTypeParamInstantiation {
-                                                            span: Span::default(),
-                                                            params: vec![
-                                                                Box::new(TsType::TsIndexedAccessType(TsIndexedAccessType {
-                                                                    span: Span::default(),
-                                                                    readonly: false,
-                                                                    obj_type: Box::new(TsType::TsIndexedAccessType(TsIndexedAccessType { span: Span::default(), readonly: false, obj_type: Box::new(ts_type_ref("Queries")), index_type: Box::new(ts_type_ref("T")) })),
-                                                                    index_type: Box::new(ts_lit_type("returnType")) }))] })) })),
-                                                    false_type: Box::new(TS_UNKNOWN_TYPE)
-                                                }))]
-                                            }))
-                                        }))
-                                    })),
-                                    type_params: Some(Box::new(TsTypeParamDecl{span: Span::default(), params: vec![TsTypeParam { span: Span::default(), name: "T".into(), is_in: false, is_out: false, is_const: false, constraint: Some(Box::new(TS_STRING_TYPE)), default: None }]})),
-                                })],
-                            },
-                        })),
-                    }))],
-                })),
-            },
-        ))))]
+        let suffix = r#"declare module "pg" {
+    export interface ClientBase {
+        "query"<T extends string>(
+            q: T, 
+            args: T extends keyof Queries ? Queries[T]["args"] : unknown
+        ): Promise<T extends keyof Queries ? QueryResult<Queries[T]["returnType"]> : unknown>;
+    }
+}
+"#;
+        let lexer = Lexer::new(
+            Syntax::Typescript(TsSyntax {
+                no_early_errors: true,
+                ..Default::default()
+            }),
+            Default::default(),
+            StringInput::new(suffix, BytePos(0), BytePos(suffix.len() as u32)),
+            None,
+        );
+        let mut parser = Parser::new_from(lexer);
+        parser.parse_typescript_module().unwrap().body
     }
 }

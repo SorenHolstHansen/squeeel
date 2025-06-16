@@ -1,2 +1,5 @@
 target/
 node_modules/
+example.db
+example.db-wal
+example.db-shm

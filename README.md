@@ -4,6 +4,12 @@ Instantly make your database queries typesafe.
 
 ## Getting started
 
+In your repository, just run
+```
+npx @squeeel/cli gen
+```
+And your database queries should be typesafe.
+
 ## Supported libraries
 
 - [node-postgres](https://node-postgres.com/)

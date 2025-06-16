@@ -45,7 +45,13 @@ impl AstVisitor<'_> {
         for lib in self.libs {
             if let Some(statement) = lib.parse_call_expr(call_expr) {
                 self.statements.push(statement);
+                return;
             }
+        }
+        match &call_expr.callee {
+            swc_ecma_ast::Callee::Super(_) => {}
+            swc_ecma_ast::Callee::Import(import) => {}
+            swc_ecma_ast::Callee::Expr(expr) => self.visit_expr(expr),
         }
     }
 

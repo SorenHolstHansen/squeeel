@@ -1,16 +1,16 @@
+mod better_sqlite3;
 mod node_postgres;
+use crate::describe::DbExt;
 use crate::utils::ts_types::{
     TS_UNKNOWN_TYPE, ts_object_type, ts_object_type_computed, ts_optional_type, ts_tuple_type,
 };
 use crate::visitor::Query;
-use sqlx::PgPool;
-use sqlx::{Column, Either, Executor, MySql, Postgres, Sqlite};
+use sqlx::{Column, Either};
 use sqlx_core::describe::Describe;
 use swc_common::Span;
 use swc_ecma_ast::{
     CallExpr, Decl, Expr, Ident, Module, ModuleItem, Stmt, Tpl, TplElement, TsType, TsTypeAliasDecl,
 };
-use tokio::sync::OnceCell;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum SupportedLib {
@@ -33,34 +33,9 @@ impl TryFrom<String> for SupportedLib {
     fn try_from(value: String) -> Result<Self, Self::Error> {
         match value.as_str() {
             "pg" => Ok(SupportedLib::NodePostgres),
+            "better-sqlite3" => Ok(SupportedLib::BetterSqlite3),
             _ => Err(()),
         }
-    }
-}
-
-static PG_POOL: OnceCell<PgPool> = OnceCell::const_new();
-pub async fn pg_pool() -> &'static PgPool {
-    PG_POOL
-        .get_or_init(|| async {
-            // TODO: Get this from env vars, or a config file, or a command line argument, or something
-            PgPool::connect("postgres://postgres:postgres@localhost:5432/postgres")
-                .await
-                .unwrap()
-        })
-        .await
-}
-
-trait DbExt: sqlx::Database {
-    type Db: sqlx::Database;
-
-    async fn describe(query: String) -> Result<Describe<Self::Db>, sqlx::Error>;
-}
-
-impl DbExt for Postgres {
-    type Db = Postgres;
-
-    async fn describe(query: String) -> Result<Describe<Self::Db>, sqlx::Error> {
-        pg_pool().await.describe(&query).await
     }
 }
 
@@ -109,10 +84,8 @@ fn describe_to_d_ts_query<Lib: SqlLib>(
                 }
             }
             Either::Right(count) => {
-                for _ in 0..*count {
-                    // For a fixed number of parameters, we assume they are all of type `unknown`
-                    args.push(TS_UNKNOWN_TYPE);
-                }
+                // For a fixed number of parameters, we assume they are all of type `unknown`
+                args = vec![TS_UNKNOWN_TYPE; *count];
             }
         }
     } else {
@@ -181,7 +154,7 @@ impl SupportedLib {
     pub fn parse_call_expr(&self, call_expr: &CallExpr) -> Option<Query> {
         match self {
             SupportedLib::NodePostgres => node_postgres::NodePostgres.parse_call_expr(call_expr),
-            SupportedLib::BetterSqlite3 => todo!(),
+            SupportedLib::BetterSqlite3 => better_sqlite3::BetterSqlite3.parse_call_expr(call_expr),
         }
     }
 
@@ -190,7 +163,9 @@ impl SupportedLib {
             SupportedLib::NodePostgres => {
                 create_d_ts_file(node_postgres::NodePostgres, queries).await
             }
-            SupportedLib::BetterSqlite3 => todo!(),
+            SupportedLib::BetterSqlite3 => {
+                create_d_ts_file(better_sqlite3::BetterSqlite3, queries).await
+            }
         }
     }
 }
