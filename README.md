@@ -13,6 +13,7 @@ And your database queries should be typesafe.
 ## Supported libraries
 
 - [node-postgres](https://node-postgres.com/)
+- [better-sqlite3](https://github.com/WiseLibs/better-sqlite3)
 
 With [more coming](https://github.com/SorenHolstHansen/squeeel/issues/1)
 
