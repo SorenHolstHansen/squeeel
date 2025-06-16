@@ -6,14 +6,16 @@ type Queries = {
 			1.5 AS float,
 			'hello' AS string,
 			x'0010' AS buffer,
+			true AS bool,
 			? AS f
         `]: {
         "returnType": {
             "n"?: null | undefined;
-            "int": unknown;
-            "float": unknown;
+            "int": number;
+            "float": number;
             "string": string;
             "buffer": Buffer;
+            "bool": number;
             "f"?: null | undefined;
         };
         "args": [unknown];

@@ -11,6 +11,7 @@ async function main() {
 			1.5 AS float,
 			'hello' AS string,
 			x'0010' AS buffer,
+			true AS bool,
 			? AS f
         `,
 		)
