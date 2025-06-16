@@ -25,6 +25,11 @@ pub const TS_NULL_TYPE: TsType = TsType::TsKeywordType(TsKeywordType {
     kind: swc_ecma_ast::TsKeywordTypeKind::TsNullKeyword,
 });
 
+pub const TS_NEVER_TYPE: TsType = TsType::TsKeywordType(TsKeywordType {
+    span: DUMMY_SP,
+    kind: swc_ecma_ast::TsKeywordTypeKind::TsNeverKeyword,
+});
+
 pub const TS_UNDEFINED_TYPE: TsType = TsType::TsKeywordType(TsKeywordType {
     span: DUMMY_SP,
     kind: swc_ecma_ast::TsKeywordTypeKind::TsUndefinedKeyword,

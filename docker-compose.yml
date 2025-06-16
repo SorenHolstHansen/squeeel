@@ -19,7 +19,23 @@ services:
       interval: 500ms
       timeout: 1s
       retries: 100
+  
+  mysql:
+    container_name: mysql
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: mydatabase
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
 
 networks:
   my_network:
     driver: bridge
+
+volumes:
+  mysql_data:

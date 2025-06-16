@@ -38,7 +38,9 @@ pub async fn my_sql_pool() -> &'static MySqlPool {
     MY_SQL_POOL
         .get_or_init(|| async {
             // TODO: Get this from env vars, or a config file, or a command line argument, or something
-            MySqlPool::connect("my-database.db").await.unwrap()
+            MySqlPool::connect("mysql://user:userpassword@localhost:3306/mydatabase")
+                .await
+                .unwrap()
         })
         .await
 }

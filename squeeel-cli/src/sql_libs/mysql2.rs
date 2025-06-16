@@ -1,6 +1,7 @@
 use super::SupportedLib;
 use crate::utils::ts_types::{
-    TS_BOOLEAN_TYPE, TS_NUMBER_TYPE, TS_STRING_TYPE, TS_UNKNOWN_TYPE, ts_object_type, ts_type_ref,
+    TS_BOOLEAN_TYPE, TS_NULL_TYPE, TS_NUMBER_TYPE, TS_STRING_TYPE, TS_UNKNOWN_TYPE, ts_object_type,
+    ts_type_ref,
 };
 use crate::{sql_libs::SqlLib, visitor::Query};
 use sqlx_core::type_info::TypeInfo;
@@ -8,10 +9,10 @@ use swc_common::BytePos;
 use swc_ecma_ast::{ModuleItem, TsType};
 use swc_ecma_parser::{Lexer, Parser, StringInput, Syntax, TsSyntax};
 
-pub struct NodePostgres;
+pub struct MySql2;
 
-impl SqlLib for NodePostgres {
-    type Db = sqlx::Postgres;
+impl SqlLib for MySql2 {
+    type Db = sqlx::MySql;
 
     fn parse_call_expr(&self, call_expr: &swc_ecma_ast::CallExpr) -> Option<String> {
         let swc_ecma_ast::Callee::Expr(expr) = &call_expr.callee else {
@@ -24,7 +25,7 @@ impl SqlLib for NodePostgres {
 
         let obj = &member_expr.obj.as_ident()?.sym;
         let prop = &member_expr.prop.as_ident()?.sym;
-        if obj != "client" || prop != "query" {
+        if obj != "connection" || prop != "query" {
             return None;
         }
 
@@ -55,45 +56,24 @@ impl SqlLib for NodePostgres {
 
     fn db_type_to_ts_type(&self, ty: &<Self::Db as sqlx::Database>::TypeInfo) -> TsType {
         match ty.name().to_lowercase().as_str() {
-            "bool" => TS_BOOLEAN_TYPE,
-            "line" | "polygon" | "path" | "lseg" | "jsonpath" | "tsrange" | "int4range"
-            | "numrange" | "int8range" | "tstzrange" | "daterange" | "box" | "uuid" | "varbit"
-            | "bit" | "numeric" | "text" | "varchar" | "bpchar" | "cidr" | "inet" | "int8"
-            | "time" | "timetz" | "money" | "name" | "char" | "macaddr" | "macaddr8" => {
-                TS_STRING_TYPE
-            }
-            "float4" | "float8" | "int2" | "int4" | "oid" => TS_NUMBER_TYPE,
-            "timestamp" | "timestamptz" | "date" => ts_type_ref("Date"),
-            "point" => ts_object_type([
-                ("x".into(), TS_NUMBER_TYPE, false),
-                ("y".into(), TS_NUMBER_TYPE, false),
-            ]),
-            "jsonb" | "json" => ts_type_ref("JsonValue"),
-            "interval" => ts_object_type([
-                ("milliseconds".into(), TS_NUMBER_TYPE, true),
-                ("seconds".into(), TS_NUMBER_TYPE, true),
-                ("minutes".into(), TS_NUMBER_TYPE, true),
-                ("hours".into(), TS_NUMBER_TYPE, true),
-                ("days".into(), TS_NUMBER_TYPE, true),
-                ("months".into(), TS_NUMBER_TYPE, true),
-                ("years".into(), TS_NUMBER_TYPE, true),
-            ]),
-            "bytea" => ts_type_ref("Buffer"),
-            "circle" => ts_object_type([
-                ("x".into(), TS_NUMBER_TYPE, false),
-                ("y".into(), TS_NUMBER_TYPE, false),
-                ("radius".into(), TS_NUMBER_TYPE, false),
-            ]),
+            "text" | "char" | "varchar" | "decimal" | "time" => TS_STRING_TYPE,
+            "boolean" | "tinyint" | "smallint" | "mediumint" | "int" | "bigint" | "float"
+            | "double" | "bigint unsigned" => TS_NUMBER_TYPE,
+            "null" => TS_NULL_TYPE,
+            "binary" | "varbinary" | "blob" => ts_type_ref("Buffer"),
+            "date" | "datetime" | "timestamp" => ts_type_ref("Date"),
+            "json" => ts_type_ref("JsonValue"),
             _ => TS_UNKNOWN_TYPE,
         }
     }
 
     fn d_ts_prefix(&self) -> Vec<ModuleItem> {
-        let prefix = r#"import type pg from "pg";
-type JsonValue = string | number | boolean | null | {
-    [Key in string]?: JsonValue;
-} | JsonValue[];
-"#;
+        let prefix = r#"import type mysql from "mysql2/promise";
+
+        type JsonValue = string | number | boolean | null | {
+            [Key in string]?: JsonValue;
+        } | JsonValue[];
+        "#;
         let lexer = Lexer::new(
             Syntax::Typescript(TsSyntax {
                 ..Default::default()
@@ -107,15 +87,15 @@ type JsonValue = string | number | boolean | null | {
     }
 
     fn d_ts_suffix(&self) -> Vec<ModuleItem> {
-        let suffix = r#"declare module "pg" {
-    export interface ClientBase {
+        let suffix = r#"declare module "mysql2/promise" {
+    export interface Connection {
         query<T extends string>(
-            ...params: T extends keyof Queries ? 
-                Queries[T]["args"] extends never ? 
-                    [q: T] : 
-                    [q: T, args: Queries[T]["args"]] 
-                : [q: T, args: any]
-        ): Promise<T extends keyof Queries ? QueryResult<Queries[T]["returnType"]> : unknown>;
+			...params: T extends keyof Queries ? 
+				Queries[T]["args"] extends never ? 
+					[sql: T] : 
+					[sql: T, values: Queries[T]["args"]] : 
+				[sql: T, values: any]
+		): Promise<[T extends keyof Queries ? Queries[T]["returnType"][] : unknown, mysql.FieldPacket[]]>;
     }
 }
 "#;

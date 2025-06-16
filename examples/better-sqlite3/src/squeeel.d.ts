@@ -1,14 +1,13 @@
 type Queries = {
     [`
-        SELECT 
-			NULL AS n,
-			1 AS int,
-			1.5 AS float,
-			'hello' AS string,
-			x'0010' AS buffer,
-			true AS bool,
-			? AS f
-        `]: {
+			SELECT 
+				NULL AS n,
+				1 AS int,
+				1.5 AS float,
+				'hello' AS string,
+				x'0010' AS buffer,
+				true AS bool
+        	`]: {
         "returnType": {
             "n"?: null | undefined;
             "int": number;
@@ -16,7 +15,12 @@ type Queries = {
             "string": string;
             "buffer": Buffer;
             "bool": number;
-            "f"?: null | undefined;
+        };
+        "args": never;
+    };
+    [`SELECT ?`]: {
+        "returnType": {
+            "?"?: null | undefined;
         };
         "args": [unknown];
     };
@@ -69,7 +73,7 @@ declare module 'better-sqlite3' {
         name: string;
         open: boolean;
         inTransaction: boolean;
-        prepare<T extends string>(source: T): Statement<T extends keyof Queries ? Queries[T]["args"] : unknown[], T extends keyof Queries ? Queries[T]["returnType"] : unknown>;
+        prepare<T extends string>(source: T): Statement<T extends keyof Queries ? Queries[T]["args"] extends never ? [] : Queries[T]["args"] : unknown[], T extends keyof Queries ? Queries[T]["returnType"] : unknown>;
         transaction<F extends VariableArgFunction>(fn: F): Transaction<F>;
         exec(source: string): this;
         pragma(source: string, options?: Database.PragmaOptions): unknown;

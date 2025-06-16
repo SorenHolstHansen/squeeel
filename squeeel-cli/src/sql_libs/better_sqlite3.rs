@@ -13,7 +13,7 @@ pub struct BetterSqlite3;
 impl SqlLib for BetterSqlite3 {
     type Db = sqlx::Sqlite;
 
-    fn parse_call_expr(&self, call_expr: &swc_ecma_ast::CallExpr) -> Option<crate::visitor::Query> {
+    fn parse_call_expr(&self, call_expr: &swc_ecma_ast::CallExpr) -> Option<String> {
         let swc_ecma_ast::Callee::Expr(expr) = &call_expr.callee else {
             return None;
         };
@@ -49,14 +49,10 @@ impl SqlLib for BetterSqlite3 {
             _ => return None,
         };
 
-        Some(Query {
-            query: query.to_string(),
-            lib: SupportedLib::BetterSqlite3,
-        })
+        Some(query)
     }
 
     fn db_type_to_ts_type(&self, ty: &<Self::Db as sqlx::Database>::TypeInfo) -> TsType {
-        println!("TY {}", ty.name().to_lowercase().as_str());
         match ty.name().to_lowercase().as_str() {
             "int" | "float" | "integer" | "real" => TS_NUMBER_TYPE,
             "text" => TS_STRING_TYPE,
@@ -128,7 +124,7 @@ impl SqlLib for BetterSqlite3 {
 
         prepare<T extends string>(
             source: T
-        ): Statement<T extends keyof Queries ? Queries[T]["args"] : unknown[], T extends keyof Queries ? Queries[T]["returnType"] : unknown>;
+        ): Statement<T extends keyof Queries ? Queries[T]["args"] extends never ? [] : Queries[T]["args"] : unknown[], T extends keyof Queries ? Queries[T]["returnType"] : unknown>;
         transaction<F extends VariableArgFunction>(fn: F): Transaction<F>;
         exec(source: string): this;
         pragma(source: string, options?: Database.PragmaOptions): unknown;

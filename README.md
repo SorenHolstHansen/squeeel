@@ -25,27 +25,39 @@ npm install -D @squeeel/cli
 npx @squeeel/cli gen
 ```
 
+The database url, used libraries and such are automatically detected. If you need to configure anything, please see [the configuration section](#configuration)
+
 That's it! Your SQL queries are now type-safe. The tool will generate a `squeeel.d.ts` file with all the necessary type definitions.
 
 ## Example
+ 
+This example is using node-postgres:
+
+After running squeeel
 
 ```typescript
-// Your SQL query
 const result = await client.query(
-  `SELECT id, name, email FROM users WHERE age > $1`,
+  "SELECT id, name, age FROM users WHERE age >= $1",
+  // Typescript knows that this must be a number
   [18]
 );
 
-// TypeScript now knows exactly what result.rows contains:
-// Array<{ id: number, name: string, email: string }>
+// TypeScript nows exactly the type of result.rows:
+// { id: number, name: string, age: number }[]
 ```
 
 ## Supported Libraries
 
-- [node-postgres](https://node-postgres.com/)
-- [better-sqlite3](https://github.com/WiseLibs/better-sqlite3)
+| Library                                                      | Considerations                                                         |
+|--------------------------------------------------------------|------------------------------------------------------------------------|
+| [node-postgres](https://node-postgres.com/)                  |                                                                        |
+| [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) | You need to remove `@types/better-sqlite3`, we will provide the types. |
 
 [More libraries coming soon](https://github.com/SorenHolstHansen/squeeel/issues/1)
+
+## Configuration
+
+We are currently working on the configuration setup.
 
 ### Why Not Query Builders?
 
@@ -65,6 +77,8 @@ Due to TypeScript limitations with tagged templates, we cannot support:
 - bun-sql
 
 ## Acknowledgements
+
+We use the following other projects extensively, without which, squeeel would likely not have been possible.
 
 - [sqlx](https://github.com/launchbadge/sqlx) - Inspired by Rust's sqlx
 - [swc](https://swc.rs/) - For fast code analysis

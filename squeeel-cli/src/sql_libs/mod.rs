@@ -1,8 +1,10 @@
 mod better_sqlite3;
+mod mysql2;
 mod node_postgres;
 use crate::describe::DbExt;
 use crate::utils::ts_types::{
-    TS_UNKNOWN_TYPE, ts_object_type, ts_object_type_computed, ts_optional_type, ts_tuple_type,
+    TS_NEVER_TYPE, TS_UNKNOWN_TYPE, ts_object_type, ts_object_type_computed, ts_optional_type,
+    ts_tuple_type,
 };
 use crate::visitor::Query;
 use sqlx::{Column, Either};
@@ -16,6 +18,7 @@ use swc_ecma_ast::{
 pub enum SupportedLib {
     NodePostgres,
     BetterSqlite3,
+    MySql2,
 }
 
 impl std::fmt::Display for SupportedLib {
@@ -23,6 +26,7 @@ impl std::fmt::Display for SupportedLib {
         match self {
             SupportedLib::NodePostgres => write!(f, "pg"),
             SupportedLib::BetterSqlite3 => write!(f, "better-sqlite3"),
+            SupportedLib::MySql2 => write!(f, "mysql2"),
         }
     }
 }
@@ -34,6 +38,7 @@ impl TryFrom<String> for SupportedLib {
         match value.as_str() {
             "pg" => Ok(SupportedLib::NodePostgres),
             "better-sqlite3" => Ok(SupportedLib::BetterSqlite3),
+            "mysql2" => Ok(SupportedLib::MySql2),
             _ => Err(()),
         }
     }
@@ -42,7 +47,7 @@ impl TryFrom<String> for SupportedLib {
 trait SqlLib {
     type Db: DbExt;
 
-    fn parse_call_expr(&self, call_expr: &CallExpr) -> Option<Query>;
+    fn parse_call_expr(&self, call_expr: &CallExpr) -> Option<String>;
 
     fn d_ts_prefix(&self) -> Vec<ModuleItem>;
 
@@ -92,7 +97,14 @@ fn describe_to_d_ts_query<Lib: SqlLib>(
         // If there are no parameters, we assume an empty tuple
     }
 
-    (ts_object_type(return_type_members), ts_tuple_type(args))
+    (
+        ts_object_type(return_type_members),
+        if args.is_empty() {
+            TS_NEVER_TYPE
+        } else {
+            ts_tuple_type(args)
+        },
+    )
 }
 
 async fn describe_bulk<Db: DbExt>(queries: Vec<String>) -> Vec<Describe<<Db as DbExt>::Db>> {
@@ -152,10 +164,15 @@ async fn create_d_ts_file<Lib: SqlLib>(lib: Lib, queries: Vec<String>) -> Module
 
 impl SupportedLib {
     pub fn parse_call_expr(&self, call_expr: &CallExpr) -> Option<Query> {
-        match self {
+        let query = match self {
             SupportedLib::NodePostgres => node_postgres::NodePostgres.parse_call_expr(call_expr),
             SupportedLib::BetterSqlite3 => better_sqlite3::BetterSqlite3.parse_call_expr(call_expr),
-        }
+            SupportedLib::MySql2 => mysql2::MySql2.parse_call_expr(call_expr),
+        };
+        query.map(|q| Query {
+            query: q,
+            lib: *self,
+        })
     }
 
     pub async fn create_d_ts_file(&self, queries: Vec<String>) -> Module {
@@ -166,6 +183,7 @@ impl SupportedLib {
             SupportedLib::BetterSqlite3 => {
                 create_d_ts_file(better_sqlite3::BetterSqlite3, queries).await
             }
+            SupportedLib::MySql2 => create_d_ts_file(mysql2::MySql2, queries).await,
         }
     }
 }
