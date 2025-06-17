@@ -54,10 +54,14 @@ impl SqlLib for BetterSqlite3 {
 
     fn db_type_to_ts_type(&self, ty: &<Self::Db as sqlx::Database>::TypeInfo) -> TsType {
         match ty.name().to_lowercase().as_str() {
-            "int" | "float" | "integer" | "real" => TS_NUMBER_TYPE,
+            "integer" | "real" | "numeric" => TS_NUMBER_TYPE,
             "text" => TS_STRING_TYPE,
             "blob" => ts_type_ref("Buffer"),
             "null" => TS_NULL_TYPE,
+            // "boolean"
+            // "date"
+            // "time"
+            // "datetime"
             _ => TS_UNKNOWN_TYPE,
         }
     }

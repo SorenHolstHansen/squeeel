@@ -112,10 +112,17 @@ type JsonValue = string | number | boolean | null | {
         query<T extends string>(
             ...params: T extends keyof Queries ? 
                 Queries[T]["args"] extends never ? 
+                    [q: T, callback: (err: Error, result: QueryResult<T extends keyof Queries ? Queries[T]["returnType"] : unknown>) => void,] : 
+                    [q: T, args: Queries[T]["args"], callback: (err: Error, result: QueryResult<T extends keyof Queries ? Queries[T]["returnType"] : unknown>) => void,] 
+                : [q: T, args: any, callback: (err: Error, result: QueryResult<T extends keyof Queries ? Queries[T]["returnType"] : unknown>) => void,]
+        ): void;
+        query<T extends string>(
+            ...params: T extends keyof Queries ? 
+                Queries[T]["args"] extends never ? 
                     [q: T] : 
                     [q: T, args: Queries[T]["args"]] 
                 : [q: T, args: any]
-        ): Promise<T extends keyof Queries ? QueryResult<Queries[T]["returnType"]> : unknown>;
+        ): Promise<QueryResult<T extends keyof Queries ? Queries[T]["returnType"] : unknown>>;
     }
 }
 "#;
