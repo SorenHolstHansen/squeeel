@@ -194,7 +194,16 @@ async fn init_databases<'a, Libs: IntoIterator<Item = &'a SupportedLib>>(
     if dialects.contains(&Dialect::Postgres) {
         let Some(postgres_database_url) = postgres_database_url else {
             return Err(anyhow!(
-                "Could not find the url to connect to Postgres. Please specify either in config or in environment variables"
+                "Could not find the url to connect to Postgres. Please use either of the cli flags
+ - `--postgres-database-url`
+ - `--database-url`
+Or use one of the following environment variables
+ - `POSTGRES_DATABASE_URL`
+ - `POSTGRES_URL`
+ - `POSTGRESQL_DATABASE_URL`
+ - `POSTGRESQL_URL`
+ - `DATABASE_URL`
+"
             ));
         };
         init_pg_pool(&postgres_database_url).await?;
@@ -202,7 +211,14 @@ async fn init_databases<'a, Libs: IntoIterator<Item = &'a SupportedLib>>(
     if dialects.contains(&Dialect::Sqlite) {
         let Some(sqlite_database_url) = sqlite_database_url else {
             return Err(anyhow!(
-                "Could not find the url to connect to Sqlite. Please specify either in config or in environment variables"
+                "Could not find the url to connect to Sqlite. Please use either of the cli flags
+ - `--sqlite-database-url`
+ - `--database-url`
+Or use one of the following environment variables
+ - `SQLITE_DATABASE_URL`
+ - `SQLITE_URL`
+ - `DATABASE_URL`
+"
             ));
         };
         init_sqlite_pool(&sqlite_database_url).await?;
@@ -210,7 +226,16 @@ async fn init_databases<'a, Libs: IntoIterator<Item = &'a SupportedLib>>(
     if dialects.contains(&Dialect::MySql) {
         let Some(my_sql_database_url) = my_sql_database_url else {
             return Err(anyhow!(
-                "Could not find the url to connect to MySql. Please specify either in config or in environment variables"
+                "Could not find the url to connect to MySql. Please use either of the cli flags
+ - `--my-sql-database-url`
+ - `--database-url`
+Or use one of the following environment variables
+ - `MYSQL_DATABASE_URL`
+ - `MYSQL_URL`
+ - `MY_SQL_DATABASE_URL`
+ - `MY_SQL_URL`
+ - `DATABASE_URL`
+"
             ));
         };
         init_my_sql_pool(&my_sql_database_url).await?;
