@@ -21,6 +21,23 @@ pub enum SupportedLib {
     MySql2,
 }
 
+#[derive(PartialEq, Eq, Hash)]
+pub enum Dialect {
+    Postgres,
+    MySql,
+    Sqlite,
+}
+
+impl SupportedLib {
+    pub fn dialect(&self) -> Dialect {
+        match self {
+            SupportedLib::NodePostgres => Dialect::Postgres,
+            SupportedLib::BetterSqlite3 => Dialect::Sqlite,
+            SupportedLib::MySql2 => Dialect::MySql,
+        }
+    }
+}
+
 impl std::fmt::Display for SupportedLib {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
