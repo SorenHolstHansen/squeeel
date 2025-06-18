@@ -221,6 +221,7 @@ Or use one of the following environment variables
 "
             ));
         };
+        // TODO: if the sqlite_database_url points to a file, we should resolve it relative to the root_dir
         init_sqlite_pool(&sqlite_database_url).await?;
     }
     if dialects.contains(&Dialect::MySql) {
