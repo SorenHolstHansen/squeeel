@@ -19,7 +19,9 @@
 		"url": "https://github.com/SorenHolstHansen/squeeel/issues"
 	},
 	"homepage": "https://github.com/SorenHolstHansen/squeeel#readme",
-	"dependencies": {},
+	"dependencies": {
+		"console.table": "^0.10.0"
+	},
 	"devDependencies": {
 		"binary-install": "^1.1.0"
 	}
