@@ -1,9 +1,7 @@
-use super::SupportedLib;
+use crate::sql_libs::SqlLib;
 use crate::utils::ts_types::{
-    TS_BOOLEAN_TYPE, TS_NULL_TYPE, TS_NUMBER_TYPE, TS_STRING_TYPE, TS_UNKNOWN_TYPE, ts_object_type,
-    ts_type_ref,
+    TS_NULL_TYPE, TS_NUMBER_TYPE, TS_STRING_TYPE, TS_UNKNOWN_TYPE, ts_type_ref,
 };
-use crate::{sql_libs::SqlLib, visitor::Query};
 use sqlx_core::type_info::TypeInfo;
 use swc_common::BytePos;
 use swc_ecma_ast::{ModuleItem, TsType};
