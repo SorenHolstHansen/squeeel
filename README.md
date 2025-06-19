@@ -79,5 +79,5 @@ Squeeel gives you the best of both worlds: the power and flexibility of raw SQL 
 
 We use the following other projects extensively, without which, squeeel would likely not have been possible.
 
-- [sqlx](https://github.com/launchbadge/sqlx) - We use sqlx to get query types
+- [sqlx](https://github.com/launchbadge/sqlx) - For query type inference
 - [swc](https://swc.rs/) - For fast code analysis
