@@ -1,4 +1,6 @@
 use anyhow::anyhow;
+use clap::Parser as ClapParser;
+use clap::Subcommand;
 use serde::Deserialize;
 use simple_logger::SimpleLogger;
 use squeeel_cli::AstVisitor;
@@ -10,10 +12,8 @@ use squeeel_cli::init_pg_pool;
 use squeeel_cli::init_sqlite_pool;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::env;
 use std::path::Path;
 use std::path::PathBuf;
-use std::str::FromStr;
 use std::sync::Arc;
 use swc_common::SourceMap;
 use swc_common::sync::Lrc;
@@ -21,10 +21,31 @@ use swc_ecma_codegen::{Emitter, text_writer::JsWriter};
 use swc_ecma_parser::TsSyntax;
 use swc_ecma_parser::{Parser, StringInput, Syntax, lexer::Lexer};
 
-struct Config {
+#[derive(ClapParser, Debug)]
+pub struct Cli {
+    #[command(subcommand)]
+    pub command: Commands,
+}
+
+#[derive(Subcommand, Debug)]
+pub enum Commands {
+    /// Generate types for your raw sql queries
+    Gen(GenCommandOptions),
+}
+
+#[derive(ClapParser, Debug)]
+pub struct GenCommandOptions {
+    /// The path to the project root. Defaults to the current working directory.
+    #[clap(default_value = ".")]
+    pub project_root: PathBuf,
+
+    #[arg(long)]
     database_url: Option<String>,
+    #[arg(long)]
     postgres_database_url: Option<String>,
+    #[arg(long)]
     sqlite_database_url: Option<String>,
+    #[arg(long)]
     my_sql_database_url: Option<String>,
 }
 
@@ -61,13 +82,17 @@ fn detect_sql_libs_in_package_json(package_json_path: &Path) -> anyhow::Result<V
 
 fn main() -> anyhow::Result<()> {
     SimpleLogger::new().init().unwrap();
-    let vars = env::args().skip(1).collect::<Vec<_>>();
-    let dir = match vars.first() {
-        Some(dir) => PathBuf::from_str(dir)?,
-        None => std::env::current_dir()?,
+    let cli = Cli::parse();
+    match cli.command {
+        Commands::Gen(gen_command_options) => gen_command(gen_command_options)?,
     };
+
+    Ok(())
+}
+
+fn gen_command(options: GenCommandOptions) -> anyhow::Result<()> {
     log::info!("Detecting package root");
-    let root_dir = find_package_json_dir(&dir)?;
+    let root_dir = find_package_json_dir(&options.project_root)?;
     log::info!("Found package root located at {:?}", root_dir);
     let sql_libs = detect_sql_libs_in_package_json(&root_dir.join("package.json"))?;
     if sql_libs.is_empty() {
@@ -82,7 +107,7 @@ fn main() -> anyhow::Result<()> {
             .join(", ")
     );
 
-    let queries = detect_queries(&dir, sql_libs);
+    let queries = detect_queries(root_dir, sql_libs);
     let queries_by_lib: HashMap<SupportedLib, Vec<String>> =
         queries.into_iter().fold(HashMap::new(), |mut acc, query| {
             acc.entry(query.lib).or_default().push(query.query);
@@ -94,17 +119,7 @@ fn main() -> anyhow::Result<()> {
         .build()
         .unwrap()
         .block_on(async {
-            init_databases(
-                root_dir,
-                queries_by_lib.keys(),
-                Config {
-                    database_url: None,
-                    postgres_database_url: None,
-                    sqlite_database_url: None,
-                    my_sql_database_url: None,
-                },
-            )
-            .await?;
+            init_databases(root_dir, queries_by_lib.keys(), &options).await?;
             create_d_ts_files(root_dir, queries_by_lib).await
         })?;
 
@@ -162,11 +177,12 @@ fn detect_queries(dir: &Path, supported_libs: Vec<SupportedLib>) -> Vec<Query> {
 async fn init_databases<'a, Libs: IntoIterator<Item = &'a SupportedLib>>(
     root_dir: &Path,
     supported_libs: Libs,
-    config: Config,
+    config: &GenCommandOptions,
 ) -> anyhow::Result<()> {
     let _ = dotenvy::from_filename(root_dir.join(".env"));
     let postgres_database_url = config
         .postgres_database_url
+        .clone()
         .or(config.database_url.clone())
         .or(std::env::var("POSTGRES_DATABASE_URL").ok())
         .or(std::env::var("POSTGRES_URL").ok())
@@ -175,13 +191,15 @@ async fn init_databases<'a, Libs: IntoIterator<Item = &'a SupportedLib>>(
         .or(std::env::var("DATABASE_URL").ok());
     let sqlite_database_url = config
         .sqlite_database_url
+        .clone()
         .or(config.database_url.clone())
         .or(std::env::var("SQLITE_DATABASE_URL").ok())
         .or(std::env::var("SQLITE_URL").ok())
         .or(std::env::var("DATABASE_URL").ok());
     let my_sql_database_url = config
         .my_sql_database_url
-        .or(config.database_url)
+        .clone()
+        .or(config.database_url.clone())
         .or(std::env::var("MYSQL_DATABASE_URL").ok())
         .or(std::env::var("MYSQL_URL").ok())
         .or(std::env::var("MY_SQL_DATABASE_URL").ok())

@@ -22,3 +22,4 @@ swc_ecma_parser = "15.0.0"
 tokio = { version = "1.45.1", features = ["full"] }
 walkdir = "2.5.0"
 swc_ecma_codegen = "14.0.0"
+clap = { version = "4.5.40", features = ["derive"] }
