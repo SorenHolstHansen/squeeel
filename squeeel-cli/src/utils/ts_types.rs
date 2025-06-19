@@ -35,15 +35,15 @@ pub const TS_UNDEFINED_TYPE: TsType = TsType::TsKeywordType(TsKeywordType {
     kind: swc_ecma_ast::TsKeywordTypeKind::TsUndefinedKeyword,
 });
 
-pub const TS_ANY_TYPE: TsType = TsType::TsKeywordType(TsKeywordType {
-    span: DUMMY_SP,
-    kind: swc_ecma_ast::TsKeywordTypeKind::TsAnyKeyword,
-});
+// pub const TS_ANY_TYPE: TsType = TsType::TsKeywordType(TsKeywordType {
+//     span: DUMMY_SP,
+//     kind: swc_ecma_ast::TsKeywordTypeKind::TsAnyKeyword,
+// });
 
-pub const TS_BIGINT_TYPE: TsType = TsType::TsKeywordType(TsKeywordType {
-    span: DUMMY_SP,
-    kind: swc_ecma_ast::TsKeywordTypeKind::TsBigIntKeyword,
-});
+// pub const TS_BIGINT_TYPE: TsType = TsType::TsKeywordType(TsKeywordType {
+//     span: DUMMY_SP,
+//     kind: swc_ecma_ast::TsKeywordTypeKind::TsBigIntKeyword,
+// });
 
 pub const TS_UNKNOWN_TYPE: TsType = TsType::TsKeywordType(TsKeywordType {
     span: DUMMY_SP,
@@ -106,12 +106,12 @@ pub fn ts_object_type_computed<Members: IntoIterator<Item = (Expr, TsType, bool)
     })
 }
 
-pub fn ts_nullable_type(ty: TsType) -> TsType {
-    TsType::TsUnionOrIntersectionType(TsUnionOrIntersectionType::TsUnionType(TsUnionType {
-        span: DUMMY_SP,
-        types: vec![Box::new(ty), Box::new(TS_NULL_TYPE)],
-    }))
-}
+// pub fn ts_nullable_type(ty: TsType) -> TsType {
+//     TsType::TsUnionOrIntersectionType(TsUnionOrIntersectionType::TsUnionType(TsUnionType {
+//         span: DUMMY_SP,
+//         types: vec![Box::new(ty), Box::new(TS_NULL_TYPE)],
+//     }))
+// }
 
 pub fn ts_optional_type(ty: TsType) -> TsType {
     TsType::TsUnionOrIntersectionType(TsUnionOrIntersectionType::TsUnionType(TsUnionType {

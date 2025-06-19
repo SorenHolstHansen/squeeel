@@ -2,7 +2,6 @@ use anyhow::anyhow;
 use clap::Parser as ClapParser;
 use clap::Subcommand;
 use serde::Deserialize;
-use simple_logger::SimpleLogger;
 use squeeel_cli::AstVisitor;
 use squeeel_cli::Dialect;
 use squeeel_cli::Query;
@@ -51,6 +50,14 @@ pub struct GenCommandOptions {
 
 fn find_package_json_dir(from_dir: &Path) -> anyhow::Result<&Path> {
     let mut dir = from_dir;
+    if !dir.is_dir() {
+        let Some(new_dir) = dir.parent() else {
+            return Err(anyhow::anyhow!(
+                "The project_root is not a directory, and it doesn't have a parent"
+            ));
+        };
+        dir = new_dir;
+    }
 
     while !std::fs::exists(dir.join("package.json"))? {
         let Some(new_dir) = dir.parent() else {
@@ -81,7 +88,6 @@ fn detect_sql_libs_in_package_json(package_json_path: &Path) -> anyhow::Result<V
 }
 
 fn main() -> anyhow::Result<()> {
-    SimpleLogger::new().init().unwrap();
     let cli = Cli::parse();
     match cli.command {
         Commands::Gen(gen_command_options) => gen_command(gen_command_options)?,
@@ -91,15 +97,16 @@ fn main() -> anyhow::Result<()> {
 }
 
 fn gen_command(options: GenCommandOptions) -> anyhow::Result<()> {
-    log::info!("Detecting package root");
+    println!("Generating sql types\n");
+    println!(" - Detecting package root");
     let root_dir = find_package_json_dir(&options.project_root)?;
-    log::info!("Found package root located at {:?}", root_dir);
+    println!(" - Found package root located at {:?}", root_dir);
     let sql_libs = detect_sql_libs_in_package_json(&root_dir.join("package.json"))?;
     if sql_libs.is_empty() {
         return Err(anyhow::anyhow!("Did not detect any libs"));
     }
-    log::info!(
-        "Detected the following libs: {}",
+    println!(
+        " - Detected the following libs: {}",
         sql_libs
             .iter()
             .map(|lib| lib.to_string())
@@ -108,11 +115,13 @@ fn gen_command(options: GenCommandOptions) -> anyhow::Result<()> {
     );
 
     let queries = detect_queries(root_dir, sql_libs);
+    let num_queries = queries.len();
     let queries_by_lib: HashMap<SupportedLib, Vec<String>> =
         queries.into_iter().fold(HashMap::new(), |mut acc, query| {
             acc.entry(query.lib).or_default().push(query.query);
             acc
         });
+    println!(" - Found {} sql queries", num_queries);
 
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
@@ -122,6 +131,8 @@ fn gen_command(options: GenCommandOptions) -> anyhow::Result<()> {
             init_databases(root_dir, queries_by_lib.keys(), &options).await?;
             create_d_ts_files(root_dir, queries_by_lib).await
         })?;
+
+    println!(" - Done!");
 
     Ok(())
 }
@@ -179,6 +190,7 @@ async fn init_databases<'a, Libs: IntoIterator<Item = &'a SupportedLib>>(
     supported_libs: Libs,
     config: &GenCommandOptions,
 ) -> anyhow::Result<()> {
+    println!(" - Connecting to databases");
     let _ = dotenvy::from_filename(root_dir.join(".env"));
     let postgres_database_url = config
         .postgres_database_url
@@ -267,6 +279,7 @@ async fn create_d_ts_files(
     dir: &Path,
     queries_by_lib: HashMap<SupportedLib, Vec<String>>,
 ) -> anyhow::Result<()> {
+    println!(" - Generating squeeel.d.ts");
     let mut tasks = Vec::with_capacity(queries_by_lib.keys().len());
     for (lib, queries) in queries_by_lib {
         tasks.push(tokio::spawn({
