@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.98"
+clap = { version = "4.5.40", features = ["derive"] }
 dotenvy = "0.15.7"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
@@ -15,9 +16,9 @@ sqlx-sqlite = { version = "0.7.4", features = ["offline"] }
 sqlx-mysql = { version = "0.7.4", features = ["offline"] }
 swc_atoms = "5.0.0"
 swc_common = { version = "12.0.0", features = ["tty-emitter"] }
+swc_core = { version = "27.0.0", features = ["__ecma", "__visit"] }
 swc_ecma_ast = "12.0.0"
 swc_ecma_codegen = "14.0.0"
 swc_ecma_parser = "15.0.0"
 tokio = { version = "1.45.1", features = ["full"] }
 walkdir = "2.5.0"
-clap = { version = "4.5.40", features = ["derive"] }

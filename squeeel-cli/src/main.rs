@@ -16,6 +16,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use swc_common::SourceMap;
 use swc_common::sync::Lrc;
+use swc_core::ecma::visit::Visit as _;
 use swc_ecma_codegen::{Emitter, text_writer::JsWriter};
 use swc_ecma_parser::TsSyntax;
 use swc_ecma_parser::{Parser, StringInput, Syntax, lexer::Lexer};
@@ -174,7 +175,7 @@ fn detect_queries(dir: &Path, supported_libs: Vec<SupportedLib>) -> Vec<Query> {
 
             let module = parser.parse_typescript_module().unwrap();
             let mut ast_visitor = AstVisitor::new(&supported_libs);
-            ast_visitor.visit(&module);
+            ast_visitor.visit_module(&module);
             ast_visitor.statements()
         }));
     }
