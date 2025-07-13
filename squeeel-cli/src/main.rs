@@ -2,13 +2,13 @@ use anyhow::anyhow;
 use clap::Parser as ClapParser;
 use clap::Subcommand;
 use serde::Deserialize;
-use squeeel_cli::AstVisitor;
 use squeeel_cli::Dialect;
 use squeeel_cli::Query;
 use squeeel_cli::SupportedLib;
 use squeeel_cli::init_my_sql_pool;
 use squeeel_cli::init_pg_pool;
 use squeeel_cli::init_sqlite_pool;
+use squeeel_cli::visit_ast;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::Path;
@@ -173,9 +173,7 @@ fn detect_queries(dir: &Path, supported_libs: Vec<SupportedLib>) -> Vec<Query> {
             let mut parser = Parser::new_from(lexer);
 
             let module = parser.parse_typescript_module().unwrap();
-            let mut ast_visitor = AstVisitor::new(&supported_libs);
-            ast_visitor.visit(&module);
-            ast_visitor.statements()
+            visit_ast(&supported_libs, &module, entry.path()).unwrap()
         }));
     }
 
