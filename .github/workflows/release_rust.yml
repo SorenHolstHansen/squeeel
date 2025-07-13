@@ -6,7 +6,7 @@ on:
 name: Release Rust Binary
 
 env:
-  RELEASE_BIN: binary-install-example
+  RELEASE_BIN: squeeel-cli
   RELEASE_DIR: artifacts
   WORKING_DIR: ./squeeel-cli
   GITHUB_REF: "${{ github.ref }}"
