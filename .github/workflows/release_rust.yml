@@ -5,6 +5,10 @@ on:
 
 name: Release Rust Binary
 
+permissions:
+  id-token: write
+  contents: write
+
 env:
   RELEASE_BIN: squeeel-cli
   RELEASE_DIR: artifacts
