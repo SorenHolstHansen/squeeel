@@ -178,6 +178,9 @@ jobs:
         with:
           name: macos
 
+      - name: ls files
+        run: ls -la
+
       - name: Release Linux tarball
         uses: actions/upload-release-asset@v1
         env:
