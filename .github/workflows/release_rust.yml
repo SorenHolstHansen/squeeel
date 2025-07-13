@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@v1
 
       - name: Cache Cargo registry
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         if: matrix.rust
         with:
           path: ~/.cargo/registry
@@ -45,7 +45,7 @@ jobs:
             ${{ matrix.build }}-stable-cargo-registry-
 
       - name: Cache Cargo index
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         if: matrix.rust
         with:
           path: ~/.cargo/git
@@ -54,7 +54,7 @@ jobs:
             ${{ matrix.build }}-stable-cargo-index-
 
       - name: Cache Cargo build
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         if: matrix.rust
         with:
           path: target/release
