@@ -2,7 +2,6 @@
 	"name": "@squeeel/cli",
 	"version": "0.1.0",
 	"description": "Make your raw SQL queries type-safe instantly.",
-	"private": true,
 	"bin": {
 		"@squeeel/cli": "run.js"
 	},
