@@ -8,9 +8,10 @@ const error = (msg) => {
 	process.exit(1);
 };
 
-let { version, name, repository } = require("./package.json");
+let { version, repository } = require("./package.json");
 // temp rewrite of version to make things work
 version = "0.1.0";
+const name = "squeeel-cli";
 
 const supportedPlatforms = [
 	{
