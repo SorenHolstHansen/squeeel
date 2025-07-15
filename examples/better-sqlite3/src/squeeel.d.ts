@@ -1,3 +1,12 @@
+type Tables = {
+    "a": {
+        "i"?: number | undefined;
+        "f"?: number | undefined;
+        "s"?: null | undefined;
+        "bf"?: null | undefined;
+        "b"?: unknown | undefined;
+    };
+};
 type Queries = {
     [`
 			SELECT 

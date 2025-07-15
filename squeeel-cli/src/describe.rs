@@ -53,7 +53,7 @@ impl DbExt for Sqlite {
     async fn get_table_names() -> Result<Vec<String>, sqlx::Error> {
         let pool = SQLITE_POOL.get().unwrap();
         let table_names: Vec<String> = sqlx::query_scalar(
-            "SELECT name FROM sqlte_schema WHERE type = 'table' AND name NOT LIKE 'sqlite_%';",
+            "SELECT name FROM sqlite_schema WHERE type = 'table' AND name NOT LIKE 'sqlite_%';",
         )
         .fetch_all(pool)
         .await?;
@@ -72,7 +72,7 @@ impl DbExt for MySql {
     async fn get_table_names() -> Result<Vec<String>, sqlx::Error> {
         let pool = MY_SQL_POOL.get().unwrap();
         let table_names: Vec<String> =
-            sqlx::query_scalar("SELECT table_name FROM information_schema.tables;")
+            sqlx::query_scalar("SELECT table_name FROM information_schema.tables WHERE table_schema != 'information_schema' AND table_schema != 'sys' AND table_schema != 'mysql' AND table_schema != 'performance_schema';")
                 .fetch_all(pool)
                 .await?;
 

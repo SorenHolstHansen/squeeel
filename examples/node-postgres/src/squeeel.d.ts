@@ -2,6 +2,54 @@ import type pg from "pg";
 type JsonValue = string | number | boolean | null | {
     [Key in string]?: JsonValue;
 } | JsonValue[];
+type Tables = {
+    "a": {
+        "id": number;
+        "b"?: boolean | undefined;
+        "si"?: number | undefined;
+        "i"?: number | undefined;
+        "bi"?: string | undefined;
+        "r"?: number | undefined;
+        "d"?: number | undefined;
+        "c"?: string | undefined;
+        "s"?: string | undefined;
+        "bt"?: string | undefined;
+        "vb"?: string | undefined;
+        "bta"?: Buffer | undefined;
+        "bx"?: string | undefined;
+        "pnt"?: {
+            "x": number;
+            "y": number;
+        } | undefined;
+        "pth"?: string | undefined;
+        "plgn"?: string | undefined;
+        "ln"?: string | undefined;
+        "lsg"?: string | undefined;
+        "crcl"?: {
+            "x": number;
+            "y": number;
+            "radius": number;
+        } | undefined;
+        "intvl"?: {
+            "milliseconds"?: number;
+            "seconds"?: number;
+            "minutes"?: number;
+            "hours"?: number;
+            "days"?: number;
+            "months"?: number;
+            "years"?: number;
+        } | undefined;
+        "jsn"?: JsonValue | undefined;
+        "uid"?: string | undefined;
+        "dt"?: Date | undefined;
+        "cdr"?: string | undefined;
+        "nt"?: string | undefined;
+        "mcddr"?: string | undefined;
+        "mcd8"?: string | undefined;
+        "num"?: string | undefined;
+        "nm"?: string | undefined;
+    };
+};
 type Queries = {
     [`
         SELECT 

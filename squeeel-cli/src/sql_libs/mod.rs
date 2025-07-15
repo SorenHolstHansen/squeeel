@@ -184,7 +184,7 @@ async fn create_d_ts_file<Lib: SqlLib>(lib: Lib, queries: Vec<String>) -> Module
             declare: false,
             id: Ident::new_no_ctxt("Tables".into(), Span::default()),
             type_params: None,
-            type_ann: Box::new(ts_object_type_computed(table_types)),
+            type_ann: Box::new(ts_object_type(table_types)),
         },
     )))));
     body.push(ModuleItem::Stmt(Stmt::Decl(Decl::TsTypeAlias(Box::new(

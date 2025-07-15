@@ -257,6 +257,14 @@ Or use one of the following environment variables
             ));
         };
         // TODO: if the sqlite_database_url points to a file, we should resolve it relative to the root_dir
+        let sqlite_database_url = if sqlite_database_url.contains(":memory:") {
+            sqlite_database_url
+        } else {
+            root_dir
+                .join(sqlite_database_url)
+                .to_string_lossy()
+                .to_string()
+        };
         init_sqlite_pool(&sqlite_database_url).await?;
     }
     if dialects.contains(&Dialect::MySql) {

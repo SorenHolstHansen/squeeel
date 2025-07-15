@@ -1,0 +1,49 @@
+name: General CI Workflow
+
+on:
+  pull_request:
+
+jobs:
+  test:
+    name: cargo test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: squeeel
+        options: --health-cmd="pg_isready -d squeeel -U postgres
+        ports:
+          - 5432:5432
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: squeeel
+          MYSQL_USER: user
+          MYSQL_PASSWORD: userpassword
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: clippy, rustfmt
+      - name: Rustfmt Check
+        uses: actions-rust-lang/rustfmt@v1
+      - name: Clippy Check
+        run: cargo clippy --all-features -- -D warnings
+      - run: cargo test --all-features
+
+      - uses: extractions/setup-just@v3
+      - name: Ensure examples are up to date
+        run: |
+          just gen-postgres-example
+          just gen-mysql-example
+          just gen-sqlite-example
+      - name: Check no diff in examples
+        run: |
+          git diff --exit-code
