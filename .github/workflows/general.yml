@@ -31,10 +31,14 @@ jobs:
         with:
           components: clippy, rustfmt
       - name: Rustfmt Check
+        working-directory: ./squeeel-cli
         uses: actions-rust-lang/rustfmt@v1
       - name: Clippy Check
+        working-directory: ./squeeel-cli
         run: cargo clippy --all-features -- -D warnings
-      - run: cargo test --all-features
+      - name: Run tests
+        working-directory: ./squeeel-cli
+        run: cargo test --all-features
 
       - uses: extractions/setup-just@v3
       - name: Ensure examples are up to date
