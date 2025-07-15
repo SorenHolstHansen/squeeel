@@ -104,13 +104,15 @@ fn gen_command(options: GenCommandOptions) -> anyhow::Result<()> {
     println!("Generating sql types\n");
     println!(" - Detecting package root");
     let root_dir = find_package_json_dir(&options.project_root)?;
-    println!(" - Found package root located at {:?}", root_dir);
+    println!(" - Found package root located at {root_dir:?}");
     let sql_libs = detect_sql_libs_in_package_json(&root_dir.join("package.json"))?;
     if sql_libs.is_empty() {
-        return Err(anyhow::anyhow!("Did not detect any libs"));
+        return Err(anyhow::anyhow!(
+            "Did not detect any supported libraries. See https://github.com/SorenHolstHansen/squeeel#supported-libraries for supported libs"
+        ));
     }
     println!(
-        " - Detected the following libs: {}",
+        " - Detected the following libraries: {}",
         sql_libs
             .iter()
             .map(|lib| lib.to_string())
@@ -125,7 +127,7 @@ fn gen_command(options: GenCommandOptions) -> anyhow::Result<()> {
             acc.entry(query.lib).or_default().push(query.query);
             acc
         });
-    println!(" - Found {} sql queries", num_queries);
+    println!(" - Found {num_queries} sql queries");
 
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
