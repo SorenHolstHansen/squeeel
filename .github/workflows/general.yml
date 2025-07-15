@@ -14,7 +14,6 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: squeeel
-        options: --health-cmd="pg_isready -d squeeel -U postgres
         ports:
           - 5432:5432
       mysql:
@@ -25,7 +24,6 @@ jobs:
           MYSQL_PASSWORD: userpassword
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       - uses: actions/checkout@v4
