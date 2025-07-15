@@ -42,7 +42,7 @@ jobs:
         run: cargo test --all-features
 
       - uses: extractions/setup-just@v3
-      - run: docker ps
+      - run: echo ${{job.services.postgres.id}}
       - name: Ensure examples are up to date
         run: |
           just gen-postgres-example
