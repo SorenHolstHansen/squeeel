@@ -160,8 +160,33 @@ async fn create_d_ts_file<Lib: SqlLib>(lib: Lib, queries: Vec<String>) -> Module
         ));
     }
 
+    let table_names = Lib::Db::get_table_names().await.unwrap();
+    let descriptions = describe_bulk::<Lib::Db>(
+        table_names
+            .iter()
+            .map(|table_name| format!("SELECT * FROM {table_name}"))
+            .collect::<Vec<_>>(),
+    )
+    .await;
+    let mut table_types: Vec<(Expr, TsType, bool)> = Vec::with_capacity(table_names.len());
+    for (i, describe) in descriptions.into_iter().enumerate() {
+        let table_name = table_names[i].clone();
+
+        let (return_type, _) = describe_to_d_ts_query(&lib, &describe);
+        table_types.push((table_name.into(), return_type, false));
+    }
+
     let mut body = Vec::new();
     body.extend(lib.d_ts_prefix());
+    body.push(ModuleItem::Stmt(Stmt::Decl(Decl::TsTypeAlias(Box::new(
+        TsTypeAliasDecl {
+            span: Span::default(),
+            declare: false,
+            id: Ident::new_no_ctxt("Tables".into(), Span::default()),
+            type_params: None,
+            type_ann: Box::new(ts_object_type_computed(table_types)),
+        },
+    )))));
     body.push(ModuleItem::Stmt(Stmt::Decl(Decl::TsTypeAlias(Box::new(
         TsTypeAliasDecl {
             span: Span::default(),

@@ -7,6 +7,7 @@ pub trait DbExt: sqlx::Database {
     type Db: sqlx::Database;
 
     async fn describe(query: String) -> Result<Describe<Self::Db>, sqlx::Error>;
+    async fn get_table_names() -> Result<Vec<String>, sqlx::Error>;
 }
 
 static PG_POOL: OnceCell<PgPool> = OnceCell::const_new();
@@ -33,6 +34,13 @@ impl DbExt for Postgres {
     async fn describe(query: String) -> Result<Describe<Self::Db>, sqlx::Error> {
         PG_POOL.get().unwrap().describe(&query).await
     }
+
+    async fn get_table_names() -> Result<Vec<String>, sqlx::Error> {
+        let pool = PG_POOL.get().unwrap();
+        let table_names: Vec<String> = sqlx::query_scalar("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema';").fetch_all(pool).await?;
+
+        Ok(table_names)
+    }
 }
 
 impl DbExt for Sqlite {
@@ -41,6 +49,17 @@ impl DbExt for Sqlite {
     async fn describe(query: String) -> Result<Describe<Self::Db>, sqlx::Error> {
         SQLITE_POOL.get().unwrap().describe(&query).await
     }
+
+    async fn get_table_names() -> Result<Vec<String>, sqlx::Error> {
+        let pool = SQLITE_POOL.get().unwrap();
+        let table_names: Vec<String> = sqlx::query_scalar(
+            "SELECT name FROM sqlte_schema WHERE type = 'table' AND name NOT LIKE 'sqlite_%';",
+        )
+        .fetch_all(pool)
+        .await?;
+
+        Ok(table_names)
+    }
 }
 
 impl DbExt for MySql {
@@ -48,5 +67,15 @@ impl DbExt for MySql {
 
     async fn describe(query: String) -> Result<Describe<Self::Db>, sqlx::Error> {
         MY_SQL_POOL.get().unwrap().describe(&query).await
+    }
+
+    async fn get_table_names() -> Result<Vec<String>, sqlx::Error> {
+        let pool = MY_SQL_POOL.get().unwrap();
+        let table_names: Vec<String> =
+            sqlx::query_scalar("SELECT table_name FROM information_schema.tables;")
+                .fetch_all(pool)
+                .await?;
+
+        Ok(table_names)
     }
 }

@@ -38,12 +38,16 @@ pub struct GenCommandOptions {
     #[clap(default_value = ".")]
     pub project_root: PathBuf,
 
+    /// Set the database url. This default to the DATABASE_URL env var
     #[arg(long)]
     database_url: Option<String>,
+    /// Set the database url specifically for postgres libs. This falls back to the --database-url
     #[arg(long)]
     postgres_database_url: Option<String>,
+    /// Set the database url specifically for sqlite libs. This falls back to the --database-url
     #[arg(long)]
     sqlite_database_url: Option<String>,
+    /// Set the database url specifically for mysql libs. This falls back to the --database-url
     #[arg(long)]
     my_sql_database_url: Option<String>,
 }
