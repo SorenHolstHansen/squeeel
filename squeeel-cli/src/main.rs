@@ -21,6 +21,7 @@ use swc_ecma_parser::TsSyntax;
 use swc_ecma_parser::{Parser, StringInput, Syntax, lexer::Lexer};
 
 #[derive(ClapParser, Debug)]
+#[command(name = "@squeeel/cli", version, about, long_about = None)]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
