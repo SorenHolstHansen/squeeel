@@ -31,8 +31,9 @@ jobs:
         with:
           components: clippy, rustfmt
       - name: Rustfmt Check
-        working-directory: ./squeeel-cli
         uses: actions-rust-lang/rustfmt@v1
+        with:
+          manifest-path: ./squeeel-cli/Cargo.toml
       - name: Clippy Check
         working-directory: ./squeeel-cli
         run: cargo clippy --all-features -- -D warnings
