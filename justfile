@@ -11,8 +11,9 @@ up-examples-docker:
     docker compose -f examples/docker-compose.yml up -d
 
 seed-postgres:
+    docker cp examples/node-postgres/seed.sql {{postgres_container_id}}:/seed.sql
     docker exec -u postgres {{postgres_container_id}} psql postgres postgres -c "CREATE DATABASE squeeel;" || true
-    docker exec -u postgres {{postgres_container_id}} psql squeeel postgres < examples/node-postgres/seed.sql
+    docker exec -u postgres {{postgres_container_id}} psql squeeel postgres -f /seed.sql
 
 seed-mysql:
     docker exec -i mysql {{mysql_container_id}} -u root -prootpassword -e "CREATE DATABASE IF NOT EXISTS squeeel;"
