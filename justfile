@@ -24,18 +24,15 @@ seed-sqlite:
 
 [working-directory: 'squeeel-cli']
 gen-postgres-example:
-    export POSTGRES_URL={{postgres_url}}
-    cargo run -- gen ../examples/node-postgres
+    cargo run -- gen --database_url {{postgres_url}} ../examples/node-postgres
 
 [working-directory: 'squeeel-cli']
 gen-mysql-example:
-    export MYSQL_URL={{mysql_url}}
-    cargo run -- gen ../examples/mysql2
+    cargo run -- gen --database_url {{mysql_url}} ../examples/mysql2
 
 [working-directory: 'squeeel-cli']
 gen-sqlite-example:
-    export SQLITE_URL={{sqlite_url}}
-    cargo run -- gen ../examples/better-sqlite3
+    cargo run -- gen --database_url {{sqlite_url}} ../examples/better-sqlite3
 
 gen-examples: up-examples-docker seed-postgres seed-mysql seed-sqlite gen-postgres-example gen-mysql-example gen-sqlite-example
     
