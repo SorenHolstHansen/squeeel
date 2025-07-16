@@ -42,11 +42,10 @@ jobs:
         run: cargo test --all-features
 
       - uses: extractions/setup-just@v3
-      - run: echo ${{job.services.postgres.id}}
       - name: Ensure examples are up to date
         run: |
-          just gen-postgres-example
-          just gen-mysql-example
+          just postgres_container_id=${{job.services.postgres.id}} gen-postgres-example
+          just mysql_container_id=${{job.services.mysql.id}} gen-mysql-example
           just gen-sqlite-example
       - name: Check no diff in examples
         run: |

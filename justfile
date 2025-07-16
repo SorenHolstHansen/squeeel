@@ -1,18 +1,19 @@
 default:
   just --list
-  
-up-examples-databases:
+
+postgres_container_id := "postgres"
+mysql_container_id := "mysql"
+
+up-examples-docker:
     docker compose -f examples/docker-compose.yml up -d
 
 seed-postgres:
-    docker cp examples/node-postgres/seed.sql postgres:/seed.sql
-    docker exec -u postgres postgres psql postgres postgres -c "CREATE DATABASE squeeel;" || true
-    docker exec -u postgres postgres psql squeeel postgres -f /seed.sql
+    docker exec -u postgres {{postgres_container_id}} psql postgres postgres -c "CREATE DATABASE squeeel;" || true
+    docker exec -u postgres {{postgres_container_id}} psql squeeel postgres < examples/node-postgres/seed.sql
 
 seed-mysql:
-    docker cp examples/mysql2/seed.sql mysql:/seed.sql
-    docker exec -i mysql mysql -u root -prootpassword -e "CREATE DATABASE IF NOT EXISTS squeeel;"
-    docker exec -i mysql mysql -u root -prootpassword squeeel < examples/mysql2/seed.sql
+    docker exec -i mysql {{mysql_container_id}} -u root -prootpassword -e "CREATE DATABASE IF NOT EXISTS squeeel;"
+    docker exec -i mysql {{mysql_container_id}} -u root -prootpassword squeeel < examples/mysql2/seed.sql
 
 seed-sqlite:
     rm examples/better-sqlite3/example.db || true
@@ -39,5 +40,5 @@ gen-sqlite-example: seed-sqlite
     cd squeeel-cli
     cargo run -- gen ../examples/better-sqlite3
 
-update-examples: up-examples-databases gen-postgres-example gen-mysql-example
+gen-examples: up-examples-docker gen-postgres-example gen-mysql-example gen-sqlite-example
     
