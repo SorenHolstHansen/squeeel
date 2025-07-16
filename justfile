@@ -3,6 +3,9 @@ default:
 
 postgres_container_id := "postgres"
 mysql_container_id := "mysql"
+postgres_url := "postgres://postgres:postgres@localhost:5432/squeeel"
+mysql_url := "mysql://root:rootpassword@localhost:3306/squeeel"
+sqlite_url := "example.db"
 
 up-examples-docker:
     docker compose -f examples/docker-compose.yml up -d
@@ -19,26 +22,20 @@ seed-sqlite:
     rm examples/better-sqlite3/example.db || true
     cp examples/better-sqlite3/seeded_db.db examples/better-sqlite3/example.db
 
-gen-postgres-example: seed-postgres
-    #!/usr/bin/env bash
-    set -euxo pipefail
-    export POSTGRES_URL=postgres://postgres:postgres@localhost:5432/squeeel
-    cd squeeel-cli
+[working-directory: 'squeeel-cli']
+gen-postgres-example:
+    export POSTGRES_URL={{postgres_url}}
     cargo run -- gen ../examples/node-postgres
 
-gen-mysql-example: seed-mysql
-    #!/usr/bin/env bash
-    set -euxo pipefail
-    export MYSQL_URL=mysql://root:rootpassword@localhost:3306/squeeel
-    cd squeeel-cli
+[working-directory: 'squeeel-cli']
+gen-mysql-example:
+    export MYSQL_URL={{mysql_url}}
     cargo run -- gen ../examples/mysql2
 
-gen-sqlite-example: seed-sqlite
-    #!/usr/bin/env bash
-    set -euxo pipefail
-    export SQLITE_URL=example.db
-    cd squeeel-cli
+[working-directory: 'squeeel-cli']
+gen-sqlite-example:
+    export SQLITE_URL={{sqlite_url}}
     cargo run -- gen ../examples/better-sqlite3
 
-gen-examples: up-examples-docker gen-postgres-example gen-mysql-example gen-sqlite-example
+gen-examples: up-examples-docker seed-postgres seed-mysql seed-sqlite gen-postgres-example gen-mysql-example gen-sqlite-example
     

@@ -44,10 +44,18 @@ jobs:
         run: cargo test --all-features
 
       - uses: extractions/setup-just@v3
-      - name: Ensure examples are up to date
+      - name: Set up MySQL
         run: |
-          just postgres_container_id=${{job.services.postgres.id}} gen-postgres-example
-          just mysql_container_id=${{job.services.mysql.id}} gen-mysql-example
+          sudo /etc/init.d/mysql start
+          mysql -e 'CREATE DATABASE squeeel;' -uroot -proot
+          mysql -uroot -proot < examples/mysql2/seed.sql
+      - name: Ensure examples are up to date
+        working-directory: ./squeeel-cli
+        run: |
+          just postgres_container_id=${{job.services.postgres.id}} seed-postgres
+          just seed-sqlite
+          just gen-postgres-example
+          just mysql_url=mysql://root:root@localhost:3306/squeeel gen-mysql-example
           just gen-sqlite-example
       - name: Check no diff in examples
         run: |
