@@ -38,7 +38,7 @@ jobs:
         run: |
           sudo /etc/init.d/mysql start
           mysql -e 'CREATE DATABASE squeeel;' -uroot -proot
-          mysql -uroot -proot < examples/mysql2/seed.sql
+          mysql -uroot -proot squeeel < examples/mysql2/seed.sql
       - name: Ensure examples are up to date
         working-directory: ./squeeel-cli
         run: |
