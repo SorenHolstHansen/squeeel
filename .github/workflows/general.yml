@@ -20,8 +20,9 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_DATABASE: squeeel
-          MYSQL_USER: user
-          MYSQL_PASSWORD: userpassword
+          MYSQL_USER: mysql
+          MYSQL_PASSWORD: mysql
+          MYSQL_ROOT_PASSWORD: rootpassword
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
