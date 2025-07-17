@@ -1,12 +1,14 @@
 import { Client } from "pg";
 
 async function main() {
-	const client = new Client("postgres://postgres:postgres@localhost:5432/postgres");
+	const client = new Client(
+		"postgres://postgres:postgres@localhost:5432/postgres",
+	);
 	await client.connect();
 
 	const results = await client.query(
 		`
-        SELECT 
+    SELECT 
 			NULL as null,
 			true as bool,
 			1::smallint as smallint,
@@ -36,17 +38,16 @@ async function main() {
 			'08:00:2b:01:02:03:04:05'::macaddr8 as macaddr8,
 			'12.34'::float8::numeric::money as numeric,
 			'matt'::name as name,
-			1::oid
-        `
+			1::oid,
+			'a'::my_enum as enm
+        `,
 	);
-    console.log(results);
+	console.log(results);
 
-	const results2 = await client.query(
-		"SELECT $1", ["Hello, world"]
-	);
-    console.log(results2);
+	const results2 = await client.query("SELECT $1", ["Hello, world"]);
+	console.log(results2);
 
-    await client.end();
+	await client.end();
 }
 
-main()
+main();
