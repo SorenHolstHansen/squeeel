@@ -48,11 +48,12 @@ type Tables = {
         "mcd8"?: string | undefined;
         "num"?: string | undefined;
         "nm"?: string | undefined;
+        "en"?: "a" | "b" | "c" | undefined;
     };
 };
 type Queries = {
     [`
-        SELECT 
+    SELECT 
 			NULL as null,
 			true as bool,
 			1::smallint as smallint,
@@ -82,7 +83,8 @@ type Queries = {
 			'08:00:2b:01:02:03:04:05'::macaddr8 as macaddr8,
 			'12.34'::float8::numeric::money as numeric,
 			'matt'::name as name,
-			1::oid
+			1::oid,
+			'a'::my_enum as enm
         `]: {
         "returnType": {
             "null"?: string | undefined;
@@ -130,6 +132,7 @@ type Queries = {
             "numeric"?: string | undefined;
             "name"?: string | undefined;
             "oid"?: number | undefined;
+            "enm"?: "a" | "b" | "c" | undefined;
         };
         "args": never;
     };
@@ -142,7 +145,7 @@ type Queries = {
 };
 declare module "pg" {
     export interface ClientBase {
-        query<T extends string>(...params: T extends keyof Queries ? Queries[T]["args"] extends never ? [q: T, callback: (err: Error, result: QueryResult<T extends keyof Queries ? Queries[T]["returnType"] : unknown>) => void] : [q: T, args: Queries[T]["args"], callback: (err: Error, result: QueryResult<T extends keyof Queries ? Queries[T]["returnType"] : unknown>) => void] : [q: T, args: any, callback: (err: Error, result: QueryResult<T extends keyof Queries ? Queries[T]["returnType"] : unknown>) => void]): void;
-        query<T extends string>(...params: T extends keyof Queries ? Queries[T]["args"] extends never ? [q: T] : [q: T, args: Queries[T]["args"]] : [q: T, args: any]): Promise<QueryResult<T extends keyof Queries ? Queries[T]["returnType"] : unknown>>;
+        query<T extends string>(...params: T extends keyof Queries ? Queries[T]["args"] extends never ? [q: T, callback: (err: Error, result: pg.QueryResult<T extends keyof Queries ? Queries[T]["returnType"] : unknown>) => void] : [q: T, args: Queries[T]["args"], callback: (err: Error, result: pg.QueryResult<T extends keyof Queries ? Queries[T]["returnType"] : unknown>) => void] : [q: T, args: any, callback: (err: Error, result: pg.QueryResult<T extends keyof Queries ? Queries[T]["returnType"] : unknown>) => void]): void;
+        query<T extends string>(...params: T extends keyof Queries ? Queries[T]["args"] extends never ? [q: T] : [q: T, args: Queries[T]["args"]] : [q: T, args: any]): Promise<pg.QueryResult<T extends keyof Queries ? Queries[T]["returnType"] : unknown>>;
     }
 }

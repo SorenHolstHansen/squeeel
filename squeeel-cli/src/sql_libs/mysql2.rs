@@ -1,4 +1,5 @@
 use crate::sql_libs::SqlLib;
+use crate::utils::constants::JSON_VALUE_TYPE;
 use crate::utils::ts_types::{
     TS_NULL_TYPE, TS_NUMBER_TYPE, TS_STRING_TYPE, TS_UNKNOWN_TYPE, ts_type_ref,
 };
@@ -66,18 +67,17 @@ impl SqlLib for MySql2 {
     }
 
     fn d_ts_prefix(&self) -> Vec<ModuleItem> {
-        let prefix = r#"import type mysql from "mysql2/promise";
-
-        type JsonValue = string | number | boolean | null | {
-            [Key in string]?: JsonValue;
-        } | JsonValue[];
-        "#;
+        let prefix = format!(
+            r#"import type mysql from "mysql2/promise";
+{JSON_VALUE_TYPE}
+        "#
+        );
         let lexer = Lexer::new(
             Syntax::Typescript(TsSyntax {
                 ..Default::default()
             }),
             Default::default(),
-            StringInput::new(prefix, BytePos(0), BytePos(prefix.len() as u32)),
+            StringInput::new(&prefix, BytePos(0), BytePos(prefix.len() as u32)),
             None,
         );
         let mut parser = Parser::new_from(lexer);

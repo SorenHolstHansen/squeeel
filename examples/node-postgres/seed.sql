@@ -1,4 +1,8 @@
 DROP TABLE IF EXISTS a;
+DROP TYPE IF EXISTS my_enum;
+
+CREATE TYPE my_enum AS ENUM ('a', 'b', 'c');
+
 
 CREATE TABLE a (
     id SERIAL PRIMARY KEY,
@@ -29,5 +33,6 @@ CREATE TABLE a (
 	mcddr MACADDR,
 	mcd8 MACADDR8,
 	num NUMERIC,
-	nm NAME
+	nm NAME,
+	en my_enum
 );
