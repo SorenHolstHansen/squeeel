@@ -4,56 +4,14 @@ async function main() {
 	// Create the connection to database
 	const connection = await mysql.createConnection({
 		host: "localhost",
-		user: "user",
-		password: "userpassword",
-		database: "mydatabase",
+		user: "mysql",
+		password: "mysql",
+		database: "squeeel",
 		port: 3306,
 	});
 
-	await connection.query(`
-			CREATE TABLE IF NOT EXISTS all_mysql_types (
-			  id INT AUTO_INCREMENT PRIMARY KEY,
-
-			  -- Character types
-			  char_col CHAR(10),
-			  varchar_col VARCHAR(255),
-
-			  -- Binary types
-			  binary_col BINARY(3),
-			  varbinary_col VARBINARY(10),
-
-			  -- Text/BLOB
-			  text_col TEXT,
-			  blob_col BLOB,
-
-			  -- Integer types
-			  tinyint_col TINYINT,
-			  smallint_col SMALLINT,
-			  mediumint_col MEDIUMINT,
-			  int_col INT,
-			  bigint_col BIGINT,
-
-			  -- Float/Decimal types
-			  float_col FLOAT,
-			  double_col DOUBLE,
-			  decimal_col DECIMAL(10,3),
-
-			  -- Date/time types
-			  date_col DATE,
-			  time_col TIME,
-			  datetime_col DATETIME,
-			  timestamp_col TIMESTAMP,
-
-			  -- Boolean (TINYINT used)
-			  bool_col BOOLEAN,
-
-			  -- JSON & UUID
-			  json_col JSON
-		);
-	`);
-
 	// 	await connection.query(`
-	// 		INSERT INTO all_mysql_types (
+	// 		INSERT INTO a (
 	//   char_col, varchar_col, binary_col, varbinary_col,
 	//   text_col, blob_col, tinyint_col, smallint_col,
 	//   mediumint_col, int_col, bigint_col, float_col,
@@ -96,16 +54,14 @@ async function main() {
 			UUID() AS uuid_col,
 			INET_ATON('192.168.1.1') AS inet4_as_int_col, -- No native inet type, this gives INT representation
 			CAST(123456 AS UNSIGNED) AS unsigned_int_col
-		FROM all_mysql_types;
+		FROM a;
 			`,
 	);
 
 	console.log(results);
 	console.log(fields);
 
-	const [results2, fields2] = await connection.query(
-		"SELECT ? as input", [42]
-	);
+	const [results2, fields2] = await connection.query("SELECT ? as input", [42]);
 
 	console.log(results2);
 	console.log(fields2);

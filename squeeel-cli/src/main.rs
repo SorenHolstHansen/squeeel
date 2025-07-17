@@ -21,6 +21,7 @@ use swc_ecma_parser::TsSyntax;
 use swc_ecma_parser::{Parser, StringInput, Syntax, lexer::Lexer};
 
 #[derive(ClapParser, Debug)]
+#[command(name = "@squeeel/cli", version, about, long_about = None)]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
@@ -38,12 +39,16 @@ pub struct GenCommandOptions {
     #[clap(default_value = ".")]
     pub project_root: PathBuf,
 
+    /// Set the database url. This default to the DATABASE_URL env var
     #[arg(long)]
     database_url: Option<String>,
+    /// Set the database url specifically for postgres libs. This falls back to the --database-url
     #[arg(long)]
     postgres_database_url: Option<String>,
+    /// Set the database url specifically for sqlite libs. This falls back to the --database-url
     #[arg(long)]
     sqlite_database_url: Option<String>,
+    /// Set the database url specifically for mysql libs. This falls back to the --database-url
     #[arg(long)]
     my_sql_database_url: Option<String>,
 }
@@ -100,13 +105,15 @@ fn gen_command(options: GenCommandOptions) -> anyhow::Result<()> {
     println!("Generating sql types\n");
     println!(" - Detecting package root");
     let root_dir = find_package_json_dir(&options.project_root)?;
-    println!(" - Found package root located at {:?}", root_dir);
+    println!(" - Found package root located at {root_dir:?}");
     let sql_libs = detect_sql_libs_in_package_json(&root_dir.join("package.json"))?;
     if sql_libs.is_empty() {
-        return Err(anyhow::anyhow!("Did not detect any libs"));
+        return Err(anyhow::anyhow!(
+            "Did not detect any supported libraries. See https://github.com/SorenHolstHansen/squeeel#supported-libraries for supported libs"
+        ));
     }
     println!(
-        " - Detected the following libs: {}",
+        " - Detected the following libraries: {}",
         sql_libs
             .iter()
             .map(|lib| lib.to_string())
@@ -121,7 +128,7 @@ fn gen_command(options: GenCommandOptions) -> anyhow::Result<()> {
             acc.entry(query.lib).or_default().push(query.query);
             acc
         });
-    println!(" - Found {} sql queries", num_queries);
+    println!(" - Found {num_queries} sql queries");
 
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
@@ -250,6 +257,14 @@ Or use one of the following environment variables
             ));
         };
         // TODO: if the sqlite_database_url points to a file, we should resolve it relative to the root_dir
+        let sqlite_database_url = if sqlite_database_url.contains(":memory:") {
+            sqlite_database_url
+        } else {
+            root_dir
+                .join(sqlite_database_url)
+                .to_string_lossy()
+                .to_string()
+        };
         init_sqlite_pool(&sqlite_database_url).await?;
     }
     if dialects.contains(&Dialect::MySql) {

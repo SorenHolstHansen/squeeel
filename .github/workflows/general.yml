@@ -1,0 +1,52 @@
+name: General CI Workflow
+
+on:
+  pull_request:
+
+jobs:
+  test:
+    name: cargo test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: squeeel
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: clippy, rustfmt
+      - name: Rustfmt Check
+        uses: actions-rust-lang/rustfmt@v1
+        with:
+          manifest-path: ./squeeel-cli/Cargo.toml
+      - name: Clippy Check
+        working-directory: ./squeeel-cli
+        run: cargo clippy --all-features -- -D warnings
+      - name: Run tests
+        working-directory: ./squeeel-cli
+        run: cargo test --all-features
+
+      - uses: extractions/setup-just@v3
+      - name: Set up MySQL
+        run: |
+          sudo /etc/init.d/mysql start
+          mysql -e 'CREATE DATABASE squeeel;' -uroot -proot
+          mysql -uroot -proot squeeel < examples/mysql2/seed.sql
+      - name: Ensure examples are up to date
+        working-directory: ./squeeel-cli
+        run: |
+          just postgres_container_id=${{job.services.postgres.id}} seed-postgres
+          just seed-sqlite
+          just gen-postgres-example
+          just mysql_url=mysql://root:root@localhost:3306/squeeel gen-mysql-example
+          just gen-sqlite-example
+      - name: Check no diff in examples
+        run: |
+          git diff --exit-code

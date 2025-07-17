@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
+      POSTGRES_DB: squeeel
     ports:
       - "5432:5432"
     networks:
@@ -25,9 +25,9 @@ services:
     image: mysql
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: mydatabase
-      MYSQL_USER: user
-      MYSQL_PASSWORD: userpassword
+      MYSQL_DATABASE: squeeel
+      MYSQL_USER: mysql
+      MYSQL_PASSWORD: mysql
     ports:
       - "3306:3306"
     volumes:
