@@ -1,7 +1,7 @@
 on:
   push:
     tags:
-      - "rust_v*" # Run when tag matches rust_v*, i.e. rust_v1.0, rust_v20.15.10
+      - "squeeel-cli-v*" # Run when tag matches squeeel-cli-v*, i.e. squeeel-cli-v1.0, squeeel-cli-v20.15.10
 
 name: Release Rust Binary
 
@@ -160,8 +160,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: rust_${{ steps.get_version.outputs.VERSION }}
-          release_name: ${{ steps.get_version.outputs.VERSION }}
+          tag_name: squeeel-cli-${{ steps.get_version.outputs.VERSION }}
+          release_name: squeeel-${{ steps.get_version.outputs.VERSION }}
 
       - name: Download Linux tarball
         uses: actions/download-artifact@v4
@@ -207,3 +207,22 @@ jobs:
           asset_path: ./${{ env.RELEASE_BIN }}-${{ steps.get_version.outputs.VERSION }}-${{ env.MACOS_TARGET }}.tar.gz
           asset_content_type: application/gzip
           asset_name: ${{ env.RELEASE_BIN }}-${{ steps.get_version.outputs.VERSION }}-${{ env.MACOS_TARGET }}.tar.gz
+
+  release-npm:
+    name: npm Release
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Npm install
+        working-directory: npm-package
+        run: npm ci
+      - name: Publish
+        working-directory: npm-package
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
