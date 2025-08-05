@@ -27,7 +27,7 @@ jobs:
       - name: Run release-plz
         uses: release-plz/action@v0.5
         with:
-          manifest_path: squeeel_cli/Cargo.toml
+          manifest_path: squeeel-cli/Cargo.toml
           command: release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -54,7 +54,7 @@ jobs:
         id: release-plz
         uses: release-plz/action@v0.5
         with:
-          manifest_path: squeeel_cli/Cargo.toml
+          manifest_path: squeeel-cli/Cargo.toml
           command: release-pr
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
