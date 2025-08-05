@@ -296,7 +296,7 @@ async fn create_d_ts_files(
     let mut tasks = Vec::with_capacity(queries_by_lib.keys().len());
     for (lib, queries) in queries_by_lib {
         tasks.push(tokio::spawn({
-            async move { lib.create_d_ts_file(queries).await }
+            async move { (lib, lib.create_d_ts_file(queries).await) }
         }));
     }
 
@@ -305,28 +305,28 @@ async fn create_d_ts_files(
         outputs.push(task.await.unwrap());
     }
 
-    let cm: Lrc<SourceMap> = Default::default();
-    let code = {
-        let mut buf = Vec::new();
+    for (lib, module) in outputs {
+        let cm: Lrc<SourceMap> = Default::default();
+        let code = {
+            let mut buf = Vec::new();
 
-        {
-            let mut emitter = Emitter {
-                cfg: Default::default(),
-                cm: cm.clone(),
-                comments: None,
-                wr: JsWriter::new(cm, "\n", &mut buf, None),
-            };
+            {
+                let mut emitter = Emitter {
+                    cfg: Default::default(),
+                    cm: cm.clone(),
+                    comments: None,
+                    wr: JsWriter::new(cm, "\n", &mut buf, None),
+                };
 
-            for module in outputs {
                 emitter.emit_module(&module).unwrap();
             }
-        }
 
-        String::from_utf8_lossy(&buf).to_string()
-    };
+            String::from_utf8_lossy(&buf).to_string()
+        };
 
-    let d_ts_path = dir.join("src/squeeel.d.ts");
-    std::fs::write(d_ts_path, code).unwrap();
+        let d_ts_path = dir.join(format!("src/squeeel.{lib}.d.ts"));
+        std::fs::write(d_ts_path, code).unwrap();
+    }
 
     Ok(())
 }
