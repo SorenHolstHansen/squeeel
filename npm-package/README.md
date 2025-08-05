@@ -27,18 +27,18 @@ npx @squeeel/cli gen
 
 The database url, used libraries and such are automatically detected. If you need to configure anything, please run `npx @squeeel/cli gen --help` to get a list of configuration options.
 
-That's it! Your SQL queries are now type-safe. The tool will generate a `squeeel.d.ts` file with all the necessary type definitions.
+That's it! Your SQL queries are now type-safe. The tool will generate a `squeeel.<lib-name>.d.ts` file with all the necessary type definitions.
 
 ## Example
  
 This example is using node-postgres:
 
-After running squeeel
+After running squeeel, a `squeeel.pg.d.ts` file will be generated, and
 
 ```typescript
 const result = await client.query(
   "SELECT id, name, age FROM users WHERE age >= $1",
-  // Typescript knows the types the arguments need to have
+  // Typescript knows the types the arguments need to have, e.g. ["something"] would be an error
   [18]
 );
 
@@ -58,7 +58,7 @@ const result = await client.query(
 
 ### Unsupported Libraries
 
-Due to TypeScript limitations with tagged templates, we cannot support:
+Due to TypeScript limitations with tagged templates not being generic, we cannot support:
 - postgres.js
 - @vercel/postgres
 - bun-sql
