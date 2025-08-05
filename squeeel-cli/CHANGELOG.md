@@ -7,18 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.2](https://github.com/SorenHolstHansen/squeeel/releases/tag/v0.1.2) - 2025-08-05
+## [0.1.2](https://github.com/SorenHolstHansen/squeeel/releases/tag/v0.1.2) - 2025-07-17
+
+### Added
+
+- generate types for tables
+
+### Other
+
+- make d.ts files specific to the lib ([#25](https://github.com/SorenHolstHansen/squeeel/pull/25))
+
+## [0.1.1](https://github.com/SorenHolstHansen/squeeel/releases/tag/v0.1.1) - 2025-07-17
 
 ### Added
 
 - support enum types
-- generate types for tables
-- mysql2, better args, not completely satisfied with node-postgres
 
 ### Other
 
 - bump version ([#29](https://github.com/SorenHolstHansen/squeeel/pull/29))
-- make d.ts files specific to the lib ([#25](https://github.com/SorenHolstHansen/squeeel/pull/25))
+
+## [0.1.1](https://github.com/SorenHolstHansen/squeeel/releases/tag/v0.1.1) - 2025-07-14
+
+### Added
+
+- mysql2, better args, not completely satisfied with node-postgres
+
+### Other
+
 - general ci, ensure examples are updated, fmt, clippy, just, ...
 - cleanup
 - better logs
