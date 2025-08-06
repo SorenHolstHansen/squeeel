@@ -214,11 +214,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Query version number
+        id: get_version
+        shell: bash
+        run: |
+          echo "using version tag ${GITHUB_REF:15}"
+          echo version="${GITHUB_REF:15}" >> $GITHUB_OUTPUT
       - uses: actions/setup-node@v4
         with:
           node-version: '22.x'
           registry-url: 'https://registry.npmjs.org'
-      - name: Npm install
+      - name: bump version
+        working-directory: npm-package
+        run: npm version ${{ steps.get_version.outputs.VERSION }}
+      - name: npm install
         working-directory: npm-package
         run: npm ci
       - name: Publish
