@@ -1,6 +1,7 @@
 [package]
 name = "squeeel-cli"
 description = "Make your raw SQL queries type-safe instantly"
+license = "Apache-2.0"
 version = "0.1.2"
 edition = "2024"
 
