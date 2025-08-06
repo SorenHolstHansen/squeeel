@@ -102,8 +102,7 @@ fn main() -> anyhow::Result<()> {
 }
 
 fn gen_command(options: GenCommandOptions) -> anyhow::Result<()> {
-    println!("Generating sql types\n");
-    println!(" - Detecting package root");
+    println!("Generating result and parameter types for sql queries\n");
     let root_dir = find_package_json_dir(&options.project_root)?;
     println!(" - Found package root located at {root_dir:?}");
     let sql_libs = detect_sql_libs_in_package_json(&root_dir.join("package.json"))?;
@@ -139,7 +138,7 @@ fn gen_command(options: GenCommandOptions) -> anyhow::Result<()> {
             create_d_ts_files(root_dir, queries_by_lib).await
         })?;
 
-    println!(" - Done!");
+    println!("\nDone!");
 
     Ok(())
 }
@@ -292,7 +291,7 @@ async fn create_d_ts_files(
     dir: &Path,
     queries_by_lib: HashMap<SupportedLib, Vec<String>>,
 ) -> anyhow::Result<()> {
-    println!(" - Generating squeeel.d.ts");
+    println!(" - Generating .d.ts files");
     let mut tasks = Vec::with_capacity(queries_by_lib.keys().len());
     for (lib, queries) in queries_by_lib {
         tasks.push(tokio::spawn({
