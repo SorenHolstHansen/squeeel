@@ -1,6 +1,6 @@
 {
 	"name": "@squeeel/cli",
-	"version": "0.1.3",
+	"version": "0.1.2",
 	"description": "Make your raw SQL queries type-safe instantly.",
 	"keywords": [
 		"pg",
