@@ -6,16 +6,8 @@ on:
 name: Release Rust Binary
 
 permissions:
-  actions: write
-  checks: write
+  id-token: write
   contents: write
-  deployments: write
-  issues: write
-  packages: write
-  pull-requests: write
-  repository-projects: write
-  security-events: write
-  statuses: write
 
 env:
   RELEASE_BIN: squeeel-cli
