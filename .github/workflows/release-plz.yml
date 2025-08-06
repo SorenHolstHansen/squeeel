@@ -71,7 +71,7 @@ jobs:
           if [[ -n "$pr_number" ]]; then
             gh pr checkout $pr_number
             cd npm-package
-            npm config set version=$new_version
+            npm version $new_version
             git add .
             git commit -m "Update npm-package version"
             git push
