@@ -104,7 +104,7 @@ fn main() -> anyhow::Result<()> {
 fn gen_command(options: GenCommandOptions) -> anyhow::Result<()> {
     println!("Generating result and parameter types for sql queries\n");
     let root_dir = find_package_json_dir(&options.project_root)?;
-    println!(" - Found package root located at {root_dir:?}");
+    // println!(" - Found package root located at {root_dir:?}");
     let sql_libs = detect_sql_libs_in_package_json(&root_dir.join("package.json"))?;
     if sql_libs.is_empty() {
         return Err(anyhow::anyhow!(
@@ -121,13 +121,19 @@ fn gen_command(options: GenCommandOptions) -> anyhow::Result<()> {
     );
 
     let queries = detect_queries(root_dir, sql_libs);
-    let num_queries = queries.len();
     let queries_by_lib: HashMap<SupportedLib, Vec<String>> =
         queries.into_iter().fold(HashMap::new(), |mut acc, query| {
             acc.entry(query.lib).or_default().push(query.query);
             acc
         });
-    println!(" - Found {num_queries} sql queries");
+    println!(
+        " - Found the following number of sql queries: {}",
+        queries_by_lib
+            .iter()
+            .map(|(lib, q)| format!("{lib}: {}", q.len()))
+            .collect::<Vec<_>>()
+            .join(", ")
+    );
 
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
@@ -194,7 +200,7 @@ async fn init_databases<'a, Libs: IntoIterator<Item = &'a SupportedLib>>(
     supported_libs: Libs,
     config: &GenCommandOptions,
 ) -> anyhow::Result<()> {
-    println!(" - Connecting to databases");
+    // println!(" - Connecting to databases");
     let _ = dotenvy::from_filename(root_dir.join(".env"));
     let postgres_database_url = config
         .postgres_database_url
@@ -291,7 +297,7 @@ async fn create_d_ts_files(
     dir: &Path,
     queries_by_lib: HashMap<SupportedLib, Vec<String>>,
 ) -> anyhow::Result<()> {
-    println!(" - Generating .d.ts files");
+    // println!(" - Generating .d.ts files");
     let mut tasks = Vec::with_capacity(queries_by_lib.keys().len());
     for (lib, queries) in queries_by_lib {
         tasks.push(tokio::spawn({
