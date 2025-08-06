@@ -1,7 +1,7 @@
 on:
   push:
     tags:
-      - "squeeel-cli-v*" # Run when tag matches squeeel-cli-v*, i.e. squeeel-cli-v1.0, squeeel-cli-v20.15.10
+      - "rust_v*" # Run when tag matches rust_v*, i.e. rust_v1.0, rust_v20.15.10
 
 name: Release Rust Binary
 
@@ -160,8 +160,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: squeeel-cli-${{ steps.get_version.outputs.VERSION }}
-          release_name: squeeel-${{ steps.get_version.outputs.VERSION }}
+          tag_name: rust_${{ steps.get_version.outputs.VERSION }}
+          release_name: ${{ steps.get_version.outputs.VERSION }}
 
       - name: Download Linux tarball
         uses: actions/download-artifact@v4
