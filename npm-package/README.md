@@ -1,6 +1,6 @@
 # Squeeel
 
-Make your raw SQL queries type-safe instantly.
+Make your raw SQL queries type-safe.
 
 Squeeel is a CLI tool that analyzes your codebase to find all your raw SQL queries and automatically generates TypeScript types for both query parameters and return values. This means you get full type safety and autocompletion for your SQL queries without any runtime overhead or query builder complexity.
 
@@ -74,6 +74,15 @@ Squeeel is designed for developers who prefer writing raw SQL queries. While que
 - Often come with their own type safety
 
 Squeeel gives you the best of both worlds: the power and flexibility of raw SQL with the type safety of a query builder.
+
+## Contributing
+
+Thanks for considering contributing, any help is very welcome!
+The primary things to contribute to is
+
+- using it in projects to find rough edges, and improvements
+- Extending to more libraries, [see](https://github.com/SorenHolstHansen/squeeel/issues/1)
+- Bug fixes
 
 ## Acknowledgements
 
